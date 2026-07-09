@@ -93,3 +93,11 @@ export interface CustomGroceryItem {
 
 // What the Grocery List page renders (after overlaying store state):
 export type GroceryLine = (GroceryItem | CustomGroceryItem) & { checked: boolean };
+
+export interface RecipeFilterState {
+  query: string;
+  category: RecipeCategory | 'all';
+  tags: DietaryTag[];
+  maxTotalMinutes: number | null; // null = "Any"
+  difficulty: Difficulty | 'all';
+}
