@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from './navItems';
+import { useNavBadgeCounts } from './useNavBadgeCounts';
 import { ThemeToggle } from './ThemeToggle';
 
 export function MobileTabBar() {
   const [moreOpen, setMoreOpen] = useState(false);
+  const badgeCounts = useNavBadgeCounts();
 
   return (
     <>
@@ -60,21 +62,31 @@ export function MobileTabBar() {
       )}
 
       <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden">
-        {PRIMARY_NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
-                isActive ? 'text-primary' : 'text-text-muted'
-              }`
-            }
-          >
-            <item.icon size={20} />
-            {item.label}
-          </NavLink>
-        ))}
+        {PRIMARY_NAV_ITEMS.map((item) => {
+          const badge = item.badgeKey ? badgeCounts[item.badgeKey] : undefined;
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium ${
+                  isActive ? 'text-primary' : 'text-text-muted'
+                }`
+              }
+            >
+              <span className="relative">
+                <item.icon size={20} />
+                {Boolean(badge) && (
+                  <span className="animate-scale-pop absolute -right-2 -top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-white">
+                    {badge}
+                  </span>
+                )}
+              </span>
+              {item.label}
+            </NavLink>
+          );
+        })}
         <button
           type="button"
           onClick={() => setMoreOpen(true)}

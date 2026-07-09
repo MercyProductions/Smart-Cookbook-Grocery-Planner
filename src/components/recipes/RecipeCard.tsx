@@ -1,7 +1,10 @@
+import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, Heart, Plus, Users } from 'lucide-react';
+import { Check, Clock, Heart, Plus, Users } from 'lucide-react';
 import type { Recipe } from '@/types';
 import { CATEGORY_EMOJI, CATEGORY_LABELS } from '@/lib/labels';
+import { useMealPlanStore } from '@/stores/useMealPlanStore';
+import { useToastStore } from '@/stores/useToastStore';
 import { Card } from '@/components/ui/Card';
 import { RecipeImage } from './RecipeImage';
 import { DifficultyBadge } from './DifficultyBadge';
@@ -12,6 +15,21 @@ interface RecipeCardProps {
 
 export function RecipeCard({ recipe }: RecipeCardProps) {
   const totalMinutes = recipe.prepMinutes + recipe.cookMinutes;
+  const inPlan = useMealPlanStore((state) => state.entries.some((entry) => entry.recipeId === recipe.id));
+  const addRecipe = useMealPlanStore((state) => state.addRecipe);
+  const removeRecipe = useMealPlanStore((state) => state.removeRecipe);
+  const showToast = useToastStore((state) => state.showToast);
+
+  function handleToggleMealPlan(event: MouseEvent) {
+    event.preventDefault();
+    if (inPlan) {
+      removeRecipe(recipe.id);
+      showToast('Removed from meal plan');
+    } else {
+      addRecipe(recipe.id, recipe.servings);
+      showToast('Added to meal plan');
+    }
+  }
 
   return (
     <Card hover className="group overflow-hidden">
@@ -40,11 +58,15 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
           <button
             type="button"
-            title="Meal planning is available in a later phase"
-            className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white opacity-100 shadow-sm transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100"
-            onClick={(event) => event.preventDefault()}
+            aria-label={inPlan ? 'Remove from meal plan' : 'Add to meal plan'}
+            aria-pressed={inPlan}
+            title={inPlan ? 'In meal plan' : 'Add to meal plan'}
+            onClick={handleToggleMealPlan}
+            className={`absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full text-white shadow-sm transition-opacity duration-200 ${
+              inPlan ? 'bg-accent opacity-100' : 'bg-primary opacity-100 lg:opacity-0 lg:group-hover:opacity-100'
+            }`}
           >
-            <Plus size={16} />
+            {inPlan ? <Check size={16} /> : <Plus size={16} />}
           </button>
         </div>
 

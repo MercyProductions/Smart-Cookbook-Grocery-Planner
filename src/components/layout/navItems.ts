@@ -14,12 +14,13 @@ export interface NavItem {
   label: string;
   icon: LucideIcon;
   end?: boolean;
+  badgeKey?: 'mealPlan' | 'groceries';
 }
 
 export const PRIMARY_NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home', icon: Home, end: true },
   { to: '/recipes', label: 'Recipes', icon: BookOpen },
-  { to: '/meal-plan', label: 'Meal Plan', icon: UtensilsCrossed },
+  { to: '/meal-plan', label: 'Meal Plan', icon: UtensilsCrossed, badgeKey: 'mealPlan' },
   { to: '/grocery-list', label: 'Groceries', icon: ShoppingBasket },
 ];
 

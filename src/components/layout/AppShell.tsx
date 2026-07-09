@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { useThemeSync } from '@/lib/theme';
+import { ToastHost } from '@/components/ui/ToastHost';
 import { Sidebar } from './Sidebar';
 import { MobileTopBar } from './MobileTopBar';
 import { MobileTabBar } from './MobileTabBar';
@@ -20,6 +21,7 @@ export function AppShell() {
       </main>
 
       <MobileTabBar />
+      <ToastHost />
     </div>
   );
 }

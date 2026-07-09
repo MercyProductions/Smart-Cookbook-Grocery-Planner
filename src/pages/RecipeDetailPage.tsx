@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Clock, Copy, Heart, Plus, ShoppingBasket, Users } from 'lucide-react';
+import { Check, Clock, Copy, Heart, Plus, ShoppingBasket, Users } from 'lucide-react';
 import { SEED_RECIPES } from '@/data/recipes';
 import { CATEGORY_LABELS } from '@/lib/labels';
 import { scaleIngredient } from '@/lib/scaling';
 import { formatIngredientLine } from '@/lib/units';
 import { getSimilarRecipes } from '@/lib/similar';
+import { useMealPlanStore } from '@/stores/useMealPlanStore';
+import { useToastStore } from '@/stores/useToastStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Stepper } from '@/components/ui/Stepper';
@@ -19,6 +21,12 @@ export default function RecipeDetailPage() {
   const { id } = useParams();
   const recipe = useMemo(() => SEED_RECIPES.find((r) => r.id === id), [id]);
   const [servings, setServings] = useState(recipe?.servings ?? 1);
+  const inPlan = useMealPlanStore((state) =>
+    recipe ? state.entries.some((entry) => entry.recipeId === recipe.id) : false,
+  );
+  const addRecipe = useMealPlanStore((state) => state.addRecipe);
+  const removeRecipe = useMealPlanStore((state) => state.removeRecipe);
+  const showToast = useToastStore((state) => state.showToast);
 
   if (!recipe) {
     return (
@@ -40,6 +48,18 @@ export default function RecipeDetailPage() {
   const scaledIngredients = recipe.ingredients.map((ingredient) => scaleIngredient(ingredient, factor));
   const totalMinutes = recipe.prepMinutes + recipe.cookMinutes;
   const similarRecipes = getSimilarRecipes(recipe, SEED_RECIPES, 4);
+
+  const recipeId = recipe.id;
+
+  function handleToggleMealPlan() {
+    if (inPlan) {
+      removeRecipe(recipeId);
+      showToast('Removed from meal plan');
+    } else {
+      addRecipe(recipeId, servings);
+      showToast('Added to meal plan');
+    }
+  }
 
   return (
     <div>
@@ -83,11 +103,11 @@ export default function RecipeDetailPage() {
               <div className="space-y-2 pt-1">
                 <Button
                   className="w-full"
-                  title="Meal planning is available in a later phase"
-                  onClick={(event) => event.preventDefault()}
+                  variant={inPlan ? 'secondary' : 'primary'}
+                  onClick={handleToggleMealPlan}
                 >
-                  <Plus size={16} />
-                  Add to Meal Plan
+                  {inPlan ? <Check size={16} /> : <Plus size={16} />}
+                  {inPlan ? 'In Meal Plan' : 'Add to Meal Plan'}
                 </Button>
                 <div className="flex gap-2">
                   <Button

@@ -1,9 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import { ChefHat } from 'lucide-react';
-import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS } from './navItems';
+import { PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from './navItems';
+import { useNavBadgeCounts } from './useNavBadgeCounts';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Sidebar() {
+  const badgeCounts = useNavBadgeCounts();
+
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-border bg-card px-4 py-6 lg:flex">
       <div className="mb-8 flex items-center gap-2 px-2">
@@ -13,7 +16,14 @@ export function Sidebar() {
 
       <nav className="flex flex-1 flex-col gap-1">
         {PRIMARY_NAV_ITEMS.map((item) => (
-          <SidebarLink key={item.to} to={item.to} label={item.label} Icon={item.icon} end={item.end} />
+          <SidebarLink
+            key={item.to}
+            to={item.to}
+            label={item.label}
+            Icon={item.icon}
+            end={item.end}
+            badge={item.badgeKey ? badgeCounts[item.badgeKey] : undefined}
+          />
         ))}
         <div className="my-3 border-t border-border" />
         {SECONDARY_NAV_ITEMS.map((item) => (
@@ -34,11 +44,13 @@ function SidebarLink({
   label,
   Icon,
   end,
+  badge,
 }: {
   to: string;
   label: string;
-  Icon: typeof ChefHat;
+  Icon: NavItem['icon'];
   end?: boolean;
+  badge?: number;
 }) {
   return (
     <NavLink
@@ -53,7 +65,12 @@ function SidebarLink({
       }
     >
       <Icon size={18} />
-      {label}
+      <span className="flex-1">{label}</span>
+      {Boolean(badge) && (
+        <span className="animate-scale-pop inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold text-white">
+          {badge}
+        </span>
+      )}
     </NavLink>
   );
 }
