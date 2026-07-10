@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SearchX } from 'lucide-react';
 import type { DietaryTag, Difficulty, RecipeCategory, RecipeFilterState } from '@/types';
-import { SEED_RECIPES } from '@/data/recipes';
 import { applyRecipeFilters, DEFAULT_FILTER_STATE } from '@/lib/filters';
+import { useAllRecipes } from '@/stores/useRecipeStore';
 import { FilterBar } from '@/components/recipes/FilterBar';
 import { RecipeGrid } from '@/components/recipes/RecipeGrid';
 import { RecipeGridSkeleton } from '@/components/recipes/RecipeCardSkeleton';
@@ -53,13 +53,14 @@ export default function RecipeLibraryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => filtersFromSearchParams(searchParams), [searchParams]);
   const [loading, setLoading] = useState(true);
+  const allRecipes = useAllRecipes();
 
   useEffect(() => {
     const timeout = setTimeout(() => setLoading(false), 300);
     return () => clearTimeout(timeout);
   }, []);
 
-  const filteredRecipes = useMemo(() => applyRecipeFilters(SEED_RECIPES, filters), [filters]);
+  const filteredRecipes = useMemo(() => applyRecipeFilters(allRecipes, filters), [allRecipes, filters]);
 
   function handleChange(patch: Partial<RecipeFilterState>) {
     setSearchParams(searchParamsFromFilters({ ...filters, ...patch }), { replace: true });

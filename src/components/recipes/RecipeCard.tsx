@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Check, Clock, Heart, Plus, Users } from 'lucide-react';
 import type { Recipe } from '@/types';
 import { CATEGORY_EMOJI, CATEGORY_LABELS } from '@/lib/labels';
+import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMealPlanStore } from '@/stores/useMealPlanStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { Card } from '@/components/ui/Card';
@@ -18,6 +19,8 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   const inPlan = useMealPlanStore((state) => state.entries.some((entry) => entry.recipeId === recipe.id));
   const addRecipe = useMealPlanStore((state) => state.addRecipe);
   const removeRecipe = useMealPlanStore((state) => state.removeRecipe);
+  const isFavorite = useFavoritesStore((state) => state.favoriteIds.includes(recipe.id));
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const showToast = useToastStore((state) => state.showToast);
 
   function handleToggleMealPlan(event: MouseEvent) {
@@ -29,6 +32,12 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       addRecipe(recipe.id, recipe.servings);
       showToast('Added to meal plan');
     }
+  }
+
+  function handleToggleFavorite(event: MouseEvent) {
+    event.preventDefault();
+    toggleFavorite(recipe.id);
+    showToast(isFavorite ? 'Removed from favorites' : 'Added to favorites');
   }
 
   return (
@@ -47,13 +56,15 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
           <button
             type="button"
-            aria-label="Add to favorites"
-            aria-pressed={false}
-            title="Favorites are available in a later phase"
-            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-card/90 text-text-muted shadow-sm backdrop-blur transition-colors hover:text-primary"
-            onClick={(event) => event.preventDefault()}
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            aria-pressed={isFavorite}
+            title={isFavorite ? 'Favorite' : 'Add to favorites'}
+            className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-card/90 shadow-sm backdrop-blur transition-colors hover:text-primary ${
+              isFavorite ? 'text-primary' : 'text-text-muted'
+            }`}
+            onClick={handleToggleFavorite}
           >
-            <Heart size={16} />
+            <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
           </button>
 
           <button

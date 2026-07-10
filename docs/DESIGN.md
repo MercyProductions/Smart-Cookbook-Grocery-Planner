@@ -58,7 +58,7 @@ CSS-only. Rules: 150–250ms, `ease-out`, animate transform/opacity only.
 - Result count ("18 recipes"); filters show active state clearly; "Clear filters" appears only when something is active.
 
 ### Recipe Detail (`/recipes/:id`)
-- Two-column ≥lg: left = sticky info card (image, meta chips for prep/cook/total/difficulty, servings stepper, Add to Meal Plan primary button, heart, Add-ingredients-only secondary action); right = ingredients (quantities re-render live as servings change) then numbered instructions with generous line-height.
+- Two-column ≥lg: left = sticky info card (image, meta chips for prep/cook/total/difficulty, servings stepper, Add to Meal Plan primary button, heart favorite secondary button); right = ingredients (quantities re-render live as servings change) then numbered instructions with generous line-height. No separate "add ingredients only" action — the grocery list is always derived from the meal plan (see PLAN.md §7), so adding a recipe's ingredients means adding it to the meal plan.
 - Nutrition placeholder card: 4 small tiles (calories/protein/carbs/fat), "—" when absent, caption "Nutrition estimates coming soon".
 - Similar recipes: 4 cards under the main content.
 - Custom recipes: Edit + Delete buttons; seed recipes: "Duplicate & edit".

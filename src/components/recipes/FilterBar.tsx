@@ -31,7 +31,7 @@ export function FilterBar({ filters, onChange, onClear, resultCount }: FilterBar
       if (queryInput !== filters.query) onChange({ query: queryInput });
     }, 200);
     return () => clearTimeout(timeout);
-  }, [queryInput]);
+  }, [filters.query, onChange, queryInput]);
 
   function toggleTag(tag: DietaryTag) {
     const next = filters.tags.includes(tag)

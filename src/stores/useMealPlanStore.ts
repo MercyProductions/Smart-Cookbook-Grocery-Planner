@@ -8,6 +8,7 @@ interface MealPlanState {
   removeRecipe: (recipeId: string) => void;
   setServings: (recipeId: string, servings: number) => void;
   clear: () => void;
+  reset: () => void;
 }
 
 export const useMealPlanStore = create<MealPlanState>()(
@@ -28,7 +29,25 @@ export const useMealPlanStore = create<MealPlanState>()(
           ),
         })),
       clear: () => set({ entries: [] }),
+      reset: () => set({ entries: [] }),
     }),
-    { name: 'cookbook.mealplan.v1' },
+    {
+      name: 'cookbook.mealplan.v1',
+      version: 1,
+      partialize: (state) => ({ entries: state.entries }),
+      migrate: (persisted) => {
+        const state = persisted as Partial<MealPlanState> | undefined;
+        return {
+          entries: Array.isArray(state?.entries)
+            ? state.entries.filter(
+                (entry): entry is { recipeId: string; servings: number } =>
+                  typeof entry.recipeId === 'string' &&
+                  typeof entry.servings === 'number' &&
+                  Number.isFinite(entry.servings),
+              )
+            : [],
+        };
+      },
+    },
   ),
 );

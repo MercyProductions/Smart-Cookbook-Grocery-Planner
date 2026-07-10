@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBasket, UtensilsCrossed } from 'lucide-react';
 import type { Recipe } from '@/types';
-import { SEED_RECIPES } from '@/data/recipes';
 import { useMealPlanStore } from '@/stores/useMealPlanStore';
+import { useAllRecipes } from '@/stores/useRecipeStore';
 import { MealPlanCard } from '@/components/mealplan/MealPlanCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
@@ -12,10 +12,11 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 export default function MealPlanPage() {
   const entries = useMealPlanStore((state) => state.entries);
   const clear = useMealPlanStore((state) => state.clear);
+  const allRecipes = useAllRecipes();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const items = entries
-    .map((entry) => ({ entry, recipe: SEED_RECIPES.find((r) => r.id === entry.recipeId) }))
+    .map((entry) => ({ entry, recipe: allRecipes.find((r) => r.id === entry.recipeId) }))
     .filter((item): item is { entry: (typeof entries)[number]; recipe: Recipe } => Boolean(item.recipe));
 
   const totalServings = items.reduce((sum, item) => sum + item.entry.servings, 0);

@@ -1,15 +1,17 @@
-import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Check, Clock, Copy, Heart, Plus, ShoppingBasket, Users } from 'lucide-react';
-import { SEED_RECIPES } from '@/data/recipes';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Check, Clock, Copy, Heart, Pencil, Plus, Trash2, Users } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/labels';
 import { scaleIngredient } from '@/lib/scaling';
 import { formatIngredientLine } from '@/lib/units';
 import { getSimilarRecipes } from '@/lib/similar';
+import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMealPlanStore } from '@/stores/useMealPlanStore';
+import { useAllRecipes, useRecipeById, useRecipeStore } from '@/stores/useRecipeStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Stepper } from '@/components/ui/Stepper';
 import { RecipeImage } from '@/components/recipes/RecipeImage';
 import { DifficultyBadge } from '@/components/recipes/DifficultyBadge';
@@ -19,14 +21,24 @@ import { SimilarRecipes } from '@/components/recipes/SimilarRecipes';
 
 export default function RecipeDetailPage() {
   const { id } = useParams();
-  const recipe = useMemo(() => SEED_RECIPES.find((r) => r.id === id), [id]);
+  const navigate = useNavigate();
+  const allRecipes = useAllRecipes();
+  const recipe = useRecipeById(id);
   const [servings, setServings] = useState(recipe?.servings ?? 1);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const inPlan = useMealPlanStore((state) =>
     recipe ? state.entries.some((entry) => entry.recipeId === recipe.id) : false,
   );
   const addRecipe = useMealPlanStore((state) => state.addRecipe);
   const removeRecipe = useMealPlanStore((state) => state.removeRecipe);
+  const isFavorite = useFavoritesStore((state) => (recipe ? state.favoriteIds.includes(recipe.id) : false));
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const deleteRecipe = useRecipeStore((state) => state.deleteRecipe);
   const showToast = useToastStore((state) => state.showToast);
+
+  useEffect(() => {
+    if (recipe) setServings(recipe.servings);
+  }, [recipe]);
 
   if (!recipe) {
     return (
@@ -47,7 +59,7 @@ export default function RecipeDetailPage() {
   const factor = servings / recipe.servings;
   const scaledIngredients = recipe.ingredients.map((ingredient) => scaleIngredient(ingredient, factor));
   const totalMinutes = recipe.prepMinutes + recipe.cookMinutes;
-  const similarRecipes = getSimilarRecipes(recipe, SEED_RECIPES, 4);
+  const similarRecipes = getSimilarRecipes(recipe, allRecipes, 4);
 
   const recipeId = recipe.id;
 
@@ -59,6 +71,18 @@ export default function RecipeDetailPage() {
       addRecipe(recipeId, servings);
       showToast('Added to meal plan');
     }
+  }
+
+  function handleToggleFavorite() {
+    toggleFavorite(recipeId);
+    showToast(isFavorite ? 'Removed from favorites' : 'Added to favorites');
+  }
+
+  function handleDelete() {
+    deleteRecipe(recipeId);
+    showToast('Recipe deleted');
+    setDeleteOpen(false);
+    navigate('/recipes');
   }
 
   return (
@@ -109,35 +133,38 @@ export default function RecipeDetailPage() {
                   {inPlan ? <Check size={16} /> : <Plus size={16} />}
                   {inPlan ? 'In Meal Plan' : 'Add to Meal Plan'}
                 </Button>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    title="Favorites are available in a later phase"
-                    onClick={(event) => event.preventDefault()}
-                  >
-                    <Heart size={16} />
-                    Favorite
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    title="Grocery list is available in a later phase"
-                    onClick={(event) => event.preventDefault()}
-                  >
-                    <ShoppingBasket size={16} />
-                    Add ingredients
-                  </Button>
-                </div>
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   className="w-full"
-                  title="Recipe editing is available in a later phase"
-                  onClick={(event) => event.preventDefault()}
+                  aria-pressed={isFavorite}
+                  onClick={handleToggleFavorite}
                 >
-                  <Copy size={16} />
-                  Duplicate &amp; edit
+                  <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
+                  {isFavorite ? 'Favorited' : 'Favorite'}
                 </Button>
+                {recipe.isCustom ? (
+                  <>
+                    <Link
+                      to={`/recipes/${recipe.id}/edit`}
+                      className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium text-text transition-all duration-200 hover:bg-primary-soft active:scale-[0.98]"
+                    >
+                      <Pencil size={16} />
+                      Edit recipe
+                    </Link>
+                    <Button variant="danger" className="w-full" onClick={() => setDeleteOpen(true)}>
+                      <Trash2 size={16} />
+                      Delete recipe
+                    </Button>
+                  </>
+                ) : (
+                  <Link
+                    to={`/recipes/${recipe.id}/edit`}
+                    className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-transparent px-4 text-sm font-medium text-text-muted transition-all duration-200 hover:bg-primary-soft/60 hover:text-text active:scale-[0.98]"
+                  >
+                    <Copy size={16} />
+                    Duplicate &amp; edit
+                  </Link>
+                )}
               </div>
             </div>
           </Card>
@@ -184,6 +211,16 @@ export default function RecipeDetailPage() {
           <SimilarRecipes recipes={similarRecipes} />
         </div>
       </div>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title="Delete recipe?"
+        body="This removes the recipe from your library, meal plan, and favorites. This can't be undone."
+        confirmLabel="Delete"
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteOpen(false)}
+      />
     </div>
   );
 }

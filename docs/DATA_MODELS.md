@@ -141,7 +141,7 @@ type UnitFamily = 'volume-us' | 'volume-metric' | 'weight-us' | 'weight-metric'
 
 **Step 4 — Sum.** Convert each contribution to the family's base unit, sum. Collect contributing recipe titles (deduped) into `sourceRecipes`. `to-taste` lines don't sum quantities; they just merge into one line rendered as "to taste".
 
-**Step 5 — Choose display unit.** Convert the base-unit total up to the largest unit whose value is ≥ 1 (e.g., 52 tsp → 1.08 cup → display `1.1 cup`; 900 g stays `g`; 1500 g → `1.5 kg`). Countables keep their unit. Round with `formatQuantity()`:
+**Step 5 — Choose display unit.** Convert the base-unit total up to the largest unit in the family whose *formatted* value doesn't round down to `"0"` (not simply "largest unit ≥ 1" — that rule force-promotes small quantities into unreadable results, e.g. 2 tsp baking powder becoming "0 cup"; scan from the largest unit down and stop at the first one whose `formatQuantity()` output isn't `"0"`). Examples: 52 tsp → 1.08 cup → display `1.1 cup`; 24 tsp (from merged tbsp) → 0.5 cup → display `½ cup` (this is intentional — promotion can legitimately land below 1 when the result is a clean fraction); 2 tsp stays `2 tsp` (promoting to cup would round to "0"). Countables keep their unit. Round with `formatQuantity()`:
 - Render common cooking fractions when within 0.02 of ¼ ⅓ ½ ⅔ ¾: `0.5` → "½", `1.5` → "1½".
 - Otherwise round to 1 decimal; strip trailing `.0`.
 
