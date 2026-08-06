@@ -20,8 +20,8 @@ export function AppShell() {
       <Sidebar />
       <MobileTopBar />
 
-      <main className="pb-20 lg:ml-60 lg:w-[calc(100%_-_15rem)] lg:pb-0">
-        <div key={location.pathname} className="animate-fade-up mx-auto max-w-[1200px] px-4 py-6 md:px-8">
+      <main className="pb-20 lg:ml-64 lg:w-[calc(100%_-_16rem)] lg:pb-0">
+        <div key={location.pathname} className="animate-fade-up mx-auto max-w-[1440px] px-4 py-5 md:px-8 md:py-8 xl:px-10">
           <Outlet />
         </div>
       </main>

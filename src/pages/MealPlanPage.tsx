@@ -74,8 +74,9 @@ export default function MealPlanPage() {
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Meal Plan</h1>
-          <p className="mt-1 text-sm text-text-muted">Put breakfast, lunch, and dinner on the calendar, then shop the week.</p>
+          <p className="text-sm font-semibold text-primary">Your week, handled</p>
+          <h1 className="mt-1 font-display text-[42px] leading-none text-text">Meal Plan</h1>
+          <p className="mt-3 text-sm leading-6 text-text-muted">Give every day a little intention, then let the grocery list follow along.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {entries.length > 0 && (
@@ -83,7 +84,7 @@ export default function MealPlanPage() {
           )}
           <Link
             to={`/grocery-list?from=${weekStart}&to=${weekEnd}`}
-            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-white transition-all duration-200 hover:bg-primary-hover active:scale-[0.98]"
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-white transition-all duration-200 hover:bg-primary-hover active:scale-[0.98]"
           >
             <ShoppingBasket size={14} />
             Shop this week
@@ -97,7 +98,7 @@ export default function MealPlanPage() {
           <span className="hidden sm:inline">Previous</span>
         </Button>
         <div className="text-center">
-          <p className="text-sm font-semibold">{formatWeekRange(weekStart)}</p>
+          <p className="font-display text-xl leading-none">{formatWeekRange(weekStart)}</p>
           <button type="button" onClick={() => setWeekStart(startOfWeek(todayKey()))} className="mt-0.5 text-xs font-medium text-primary hover:text-primary-hover">This week</button>
         </div>
         <Button variant="ghost" size="sm" aria-label="Next week" onClick={() => setWeekStart((value) => addDays(value, 7))}>
@@ -112,8 +113,8 @@ export default function MealPlanPage() {
           return (
             <section key={date} className={`min-w-0 border border-border bg-card p-3 ${label.isToday ? 'border-primary ring-1 ring-primary/20' : ''}`}>
               <div className="mb-3 flex items-center gap-2">
-                <span className="text-xs font-medium uppercase tracking-wide text-text-muted">{label.weekday}</span>
-                <span className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${label.isToday ? 'bg-primary text-white' : 'bg-surface text-text'}`}>{label.day}</span>
+                <span className="text-xs font-semibold uppercase text-text-muted">{label.weekday}</span>
+                <span className={`flex h-7 w-7 items-center justify-center rounded-md text-sm font-semibold ${label.isToday ? 'bg-primary text-white' : 'bg-surface text-text'}`}>{label.day}</span>
               </div>
               <div className="space-y-2">
                 {MEAL_SLOTS.map((mealSlot) => {
@@ -218,7 +219,7 @@ function MealSlotCard({
   if (!entry || !recipe) {
     return (
       <button type="button" onClick={onPick} className="flex min-h-16 w-full flex-col items-start justify-center rounded-lg border border-dashed border-border px-2 text-left hover:border-primary hover:bg-primary-soft/40">
-        <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted">{MEAL_SLOT_LABELS[mealSlot]}</span>
+        <span className="text-[11px] font-semibold uppercase text-text-muted">{MEAL_SLOT_LABELS[mealSlot]}</span>
         <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary"><Plus size={13} /> Add meal</span>
       </button>
     );
@@ -226,8 +227,8 @@ function MealSlotCard({
 
   return (
     <div className="group rounded-lg border border-border bg-surface p-2">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-text-muted">{MEAL_SLOT_LABELS[mealSlot]}</p>
-      <Link to={`/recipes/${recipe.id}`} className="mt-1 block line-clamp-2 text-xs font-semibold leading-snug hover:text-primary">{recipe.title}</Link>
+      <p className="text-[11px] font-semibold uppercase text-text-muted">{MEAL_SLOT_LABELS[mealSlot]}</p>
+      <Link to={`/recipes/${recipe.id}`} className="mt-1 block line-clamp-2 font-display text-base leading-snug hover:text-primary">{recipe.title}</Link>
       <div className="mt-2 flex items-center gap-1 text-[11px] text-text-muted">
         <button type="button" aria-label={`Decrease servings for ${recipe.title}`} onClick={() => onSetServings(Math.max(1, entry.servings - 1))} className="flex h-6 w-6 items-center justify-center rounded text-text-muted hover:bg-primary-soft"><Minus size={12} /></button>
         <span className="min-w-10 text-center">{entry.servings} servings</span>

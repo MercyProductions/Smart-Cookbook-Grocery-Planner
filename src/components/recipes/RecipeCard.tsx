@@ -45,11 +45,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
       <Link to={`/recipes/${recipe.id}`} className="block">
         <div className="relative">
           <RecipeImage image={recipe.image} category={recipe.category} className="aspect-[4/3] w-full" />
-          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-card/90 px-2.5 py-0.5 text-xs font-medium text-text shadow-sm backdrop-blur">
+          <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-md bg-card/95 px-2.5 py-1 text-[11px] font-semibold text-text shadow-sm">
             {CATEGORY_EMOJI[recipe.category]} {CATEGORY_LABELS[recipe.category]}
           </span>
           {recipe.isCustom && (
-            <span className="absolute left-3 bottom-3 inline-flex items-center rounded-full bg-primary/90 px-2.5 py-0.5 text-xs font-medium text-white shadow-sm">
+            <span className="absolute left-3 bottom-3 inline-flex items-center rounded-md bg-primary px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
               My recipe
             </span>
           )}
@@ -59,7 +59,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             aria-pressed={isFavorite}
             title={isFavorite ? 'Favorite' : 'Add to favorites'}
-            className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-card/90 shadow-sm backdrop-blur transition-colors hover:text-primary ${
+            className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md bg-card/95 shadow-sm transition-colors hover:text-primary ${
               isFavorite ? 'text-primary' : 'text-text-muted'
             }`}
             onClick={handleToggleFavorite}
@@ -73,7 +73,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             aria-pressed={inPlan}
             title={inPlan ? 'In meal plan' : 'Add to meal plan'}
             onClick={handleToggleMealPlan}
-            className={`absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full text-white shadow-sm transition-opacity duration-200 ${
+            className={`absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-md text-white shadow-sm transition-opacity duration-200 ${
               inPlan ? 'bg-accent opacity-100' : 'bg-primary opacity-100 lg:opacity-0 lg:group-hover:opacity-100'
             }`}
           >
@@ -82,8 +82,8 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
 
         <div className="p-4">
-          <h3 className="line-clamp-2 font-semibold tracking-tight text-text">{recipe.title}</h3>
-          <div className="mt-2 flex items-center gap-3 text-xs text-text-muted">
+          <h3 className="line-clamp-2 font-display text-xl leading-6 text-text">{recipe.title}</h3>
+          <div className="mt-3 flex items-center gap-3 border-t border-border pt-3 text-xs text-text-muted">
             <span className="inline-flex items-center gap-1">
               <Clock size={13} />
               {totalMinutes} min

@@ -24,7 +24,7 @@ export function MobileTabBar() {
           role="dialog"
           aria-modal="true"
           aria-label="More navigation"
-          className="animate-fade-up fixed inset-x-0 bottom-0 z-50 rounded-t-2xl border-t border-border bg-card p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden"
+          className="animate-fade-up fixed inset-x-0 bottom-0 z-50 rounded-t-lg border-t border-border bg-card p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden"
         >
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-semibold text-text-muted">More</span>
@@ -45,7 +45,7 @@ export function MobileTabBar() {
                 onClick={() => setMoreOpen(false)}
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium ${
-                    isActive ? 'bg-primary-soft text-primary' : 'text-text hover:bg-primary-soft/60'
+                    isActive ? 'bg-primary-soft text-primary' : 'text-text hover:bg-surface'
                   }`
                 }
               >

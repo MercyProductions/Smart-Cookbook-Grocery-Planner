@@ -10,11 +10,14 @@ export default function FavoritesPage() {
   const favorites = allRecipes.filter((recipe) => favoriteIds.includes(recipe.id));
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Favorites</h1>
-      <p className="mt-1 text-sm text-text-muted">Recipes you saved for later.</p>
+    <div className="pb-10">
+      <section className="border-b border-border pb-7">
+        <p className="text-sm font-semibold text-primary">Your personal classics</p>
+        <h1 className="mt-1 font-display text-[45px] leading-none text-text">Favorites</h1>
+        <p className="mt-3 text-sm text-text-muted">Recipes you saved for later, sorted and ready when hunger strikes.</p>
+      </section>
 
-      <div className="mt-6">
+      <div className="mt-7">
         {favorites.length === 0 ? (
           <EmptyState
             icon={Heart}

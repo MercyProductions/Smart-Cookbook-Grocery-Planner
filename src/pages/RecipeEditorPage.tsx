@@ -358,7 +358,7 @@ export default function RecipeEditorPage() {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
         <span className="text-5xl">?</span>
-        <h1 className="text-xl font-semibold tracking-tight">Recipe not found</h1>
+        <h1 className="font-display text-3xl">Recipe not found</h1>
         <p className="text-text-muted">This recipe may have been removed.</p>
         <Link
           to="/recipes"
@@ -374,10 +374,11 @@ export default function RecipeEditorPage() {
     <form onSubmit={handleSubmit}>
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <p className="text-sm font-semibold text-primary">Make it yours</p>
+          <h1 className="mt-1 font-display text-[42px] leading-none text-text">
             {isEditingCustom ? 'Edit Recipe' : isDuplicatingSeed ? 'Duplicate & Edit' : 'Add Recipe'}
           </h1>
-          <p className="mt-1 text-sm text-text-muted">
+          <p className="mt-3 text-sm text-text-muted">
             {isDuplicatingSeed
               ? 'Save this seed recipe as your own editable copy.'
               : 'Build a recipe that can be filtered, favorited, planned, and merged into groceries.'}
@@ -398,7 +399,7 @@ export default function RecipeEditorPage() {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-5">
           <Card className="p-5">
-            <h2 className="text-lg font-semibold tracking-tight">Basics</h2>
+            <h2 className="font-display text-2xl">Basics</h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Title" error={errors.title} className="sm:col-span-2">
                 <Input
@@ -501,7 +502,7 @@ export default function RecipeEditorPage() {
                     type="button"
                     onClick={() => toggleTag(tag)}
                     aria-pressed={form.tags.includes(tag)}
-                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`rounded-md border px-3 py-1 text-xs font-medium transition-colors ${
                       form.tags.includes(tag)
                         ? 'border-primary bg-primary text-white'
                         : 'border-border bg-card text-text-muted hover:bg-primary-soft/60'
@@ -526,7 +527,7 @@ export default function RecipeEditorPage() {
           <Card className="p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight">Ingredients</h2>
+                <h2 className="font-display text-2xl">Ingredients</h2>
                 {errors.ingredients && <p className="mt-1 text-xs text-red-600">{errors.ingredients}</p>}
               </div>
               <Button
@@ -542,7 +543,7 @@ export default function RecipeEditorPage() {
 
             <div className="mt-4 space-y-3">
               {form.ingredients.map((ingredient) => (
-                <div key={ingredient.id} className="rounded-xl border border-border bg-surface/60 p-3">
+                <div key={ingredient.id} className="rounded-lg border border-border bg-surface/60 p-3">
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_96px_120px_160px_auto]">
                     <div>
                       <Input
@@ -614,7 +615,7 @@ export default function RecipeEditorPage() {
           <Card className="p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight">Instructions</h2>
+                <h2 className="font-display text-2xl">Instructions</h2>
                 {errors.instructions && <p className="mt-1 text-xs text-red-600">{errors.instructions}</p>}
               </div>
               <Button
@@ -630,8 +631,8 @@ export default function RecipeEditorPage() {
 
             <div className="mt-4 space-y-3">
               {form.instructions.map((step, index) => (
-                <div key={index} className="flex gap-3 rounded-xl border border-border bg-surface/60 p-3">
-                  <span className="mt-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
+                <div key={index} className="flex gap-3 rounded-lg border border-border bg-surface/60 p-3">
+                  <span className="mt-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-xs font-semibold text-primary">
                     {index + 1}
                   </span>
                   <textarea
@@ -676,17 +677,17 @@ export default function RecipeEditorPage() {
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <Card className="p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft text-3xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary-soft text-3xl">
                 {form.emoji}
               </div>
               <div className="min-w-0">
-                <p className="line-clamp-1 font-semibold tracking-tight">{form.title || 'Untitled recipe'}</p>
+                <p className="line-clamp-1 font-display text-xl">{form.title || 'Untitled recipe'}</p>
                 <p className="text-xs text-text-muted">
                   {(parseNonNegative(form.prepMinutes) ?? 0) + (parseNonNegative(form.cookMinutes) ?? 0)} min total
                 </p>
               </div>
             </div>
-            <div className="mt-4 rounded-xl bg-surface p-3 text-xs text-text-muted">
+            <div className="mt-4 rounded-lg bg-surface p-3 text-xs text-text-muted">
               Exact vocabulary matches fill aisle categories automatically, which keeps grocery merging tidy.
             </div>
             {isEditingCustom && (
@@ -699,7 +700,7 @@ export default function RecipeEditorPage() {
         </aside>
       </div>
 
-      <div className="sticky bottom-0 mt-6 rounded-2xl border border-border bg-card/95 p-3 shadow-sm backdrop-blur">
+      <div className="sticky bottom-0 mt-6 rounded-lg border border-border bg-card/95 p-3 shadow-sm backdrop-blur">
         <div className="flex justify-end gap-2">
           <Button type="button" variant="secondary" onClick={handleCancel}>
             Cancel

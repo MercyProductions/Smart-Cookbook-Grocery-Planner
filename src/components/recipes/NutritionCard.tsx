@@ -11,7 +11,7 @@ const TILES: Array<{ key: keyof NutritionInfo; label: string; suffix: string }> 
 export function NutritionCard({ nutrition }: { nutrition?: NutritionInfo }) {
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-semibold tracking-tight">Nutrition (per serving)</h3>
+      <h3 className="font-display text-xl">Nutrition (per serving)</h3>
       <div className="mt-3 grid grid-cols-4 gap-2">
         {TILES.map((tile) => {
           const value = nutrition?.[tile.key];

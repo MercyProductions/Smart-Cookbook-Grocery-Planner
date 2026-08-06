@@ -107,11 +107,19 @@ export default function RecipeLibraryPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Recipe Library</h1>
-      <p className="mt-1 text-sm text-text-muted">Browse the full collection and find something that sounds good.</p>
+    <div className="pb-10">
+      <section className="border-b border-border pb-7">
+        <p className="text-sm font-semibold text-primary">The full collection</p>
+        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-display text-[45px] leading-none text-text sm:text-[56px]">Recipe Library</h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-text-muted">Thousands of ideas for hungry people, curious cooks, and everyone in between.</p>
+          </div>
+          <span className="shrink-0 text-sm font-semibold text-text-muted">{allRecipes.length.toLocaleString()} recipes</span>
+        </div>
+      </section>
 
-      <div className="mt-4">
+      <div className="mt-5">
         <FilterBar filters={filters} onChange={handleChange} onClear={handleClear} resultCount={filteredRecipes.length} />
       </div>
 

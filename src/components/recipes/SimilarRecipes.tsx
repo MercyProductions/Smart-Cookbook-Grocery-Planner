@@ -6,7 +6,7 @@ export function SimilarRecipes({ recipes }: { recipes: Recipe[] }) {
 
   return (
     <section className="mt-10">
-      <h2 className="text-lg font-semibold tracking-tight">You might also like</h2>
+      <h2 className="font-display text-3xl">You might also like</h2>
       <div className="mt-4">
         <RecipeGrid recipes={recipes} />
       </div>

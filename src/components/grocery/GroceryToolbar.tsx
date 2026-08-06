@@ -57,7 +57,7 @@ export function GroceryToolbar({
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-            <div className="animate-fade-up absolute right-0 top-11 z-20 w-52 rounded-xl border border-border bg-card p-1 shadow-lg">
+            <div className="animate-fade-up absolute right-0 top-11 z-20 w-52 rounded-lg border border-border bg-card p-1 shadow-lg">
               <MenuItem
                 label="Clear completed"
                 onClick={() => {

@@ -55,7 +55,7 @@ export function AddCustomItemForm({ onAdd, onCancel }: AddCustomItemFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mb-4 flex flex-wrap items-end gap-2 rounded-xl border border-border bg-card p-3"
+      className="mb-4 flex flex-wrap items-end gap-2 rounded-lg border border-border bg-card p-3"
     >
       <div className="min-w-[140px] flex-1">
         <label className="mb-1 block text-xs text-text-muted" htmlFor="custom-item-name">

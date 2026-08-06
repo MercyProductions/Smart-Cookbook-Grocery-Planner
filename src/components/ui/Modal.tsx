@@ -55,7 +55,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="animate-fade-up relative w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-lg"
+        className="animate-fade-up relative w-full max-w-sm rounded-lg border border-border bg-card p-5 shadow-lg"
       >
         {children}
       </div>

@@ -12,7 +12,7 @@ export function TagPill({ tag, active = false, onClick }: TagPillProps) {
 
   if (!onClick) {
     return (
-      <span className="inline-flex items-center rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
+      <span className="inline-flex items-center rounded-md bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
         {label}
       </span>
     );
@@ -23,7 +23,7 @@ export function TagPill({ tag, active = false, onClick }: TagPillProps) {
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+      className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
         active
           ? 'border-primary bg-primary-soft text-primary'
           : 'border-border bg-card text-text-muted hover:bg-primary-soft/60'

@@ -94,8 +94,9 @@ export default function GroceryListPage() {
   if (total === 0) {
     return (
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Grocery List</h1>
-        <p className="mt-1 text-sm text-text-muted">For planned meals from {from} through {to}.</p>
+        <p className="text-sm font-semibold text-primary">Shop with a plan</p>
+        <h1 className="mt-1 font-display text-[42px] leading-none text-text">Grocery List</h1>
+        <p className="mt-3 text-sm text-text-muted">For planned meals from {from} through {to}.</p>
         <div className="mt-6">
           <EmptyState
             icon={ShoppingBasket}
@@ -110,8 +111,12 @@ export default function GroceryListPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Grocery List</h1>
-      <form onSubmit={applyDateRange} className="mt-3 flex flex-wrap items-end gap-2 text-sm">
+      <section className="border-b border-border pb-5">
+        <p className="text-sm font-semibold text-primary">Shop with a plan</p>
+        <h1 className="mt-1 font-display text-[42px] leading-none text-text">Grocery List</h1>
+        <p className="mt-3 text-sm text-text-muted">Everything for the meals you&apos;ve set out to make.</p>
+      </section>
+      <form onSubmit={applyDateRange} className="mt-5 flex flex-wrap items-end gap-2 text-sm">
         <label className="text-xs font-medium text-text-muted">From<input name="from" type="date" value={rangeStart} onChange={(event) => setRangeStart(event.target.value)} className="mt-1 block h-9 rounded-lg border border-border bg-card px-2 text-sm text-text" /></label>
         <label className="text-xs font-medium text-text-muted">To<input name="to" type="date" value={rangeEnd} onChange={(event) => setRangeEnd(event.target.value)} className="mt-1 block h-9 rounded-lg border border-border bg-card px-2 text-sm text-text" /></label>
         <Button type="submit" size="sm">Update</Button>
@@ -124,7 +129,7 @@ export default function GroceryListPage() {
         <Link to="/pantry" className="font-medium text-primary hover:text-primary-hover">Manage pantry ({pantryItems.length})</Link>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-6">
         <GroceryToolbar
           total={total}
           completed={completed}

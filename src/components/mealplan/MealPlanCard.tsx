@@ -20,13 +20,13 @@ export function MealPlanCard({ recipe, servings }: MealPlanCardProps) {
   return (
     <Card className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center">
       <Link to={`/recipes/${recipe.id}`} className="shrink-0">
-        <RecipeImage image={recipe.image} category={recipe.category} className="h-20 w-full rounded-xl sm:w-20" />
+        <RecipeImage image={recipe.image} category={recipe.category} className="h-20 w-full rounded-lg sm:w-20" />
       </Link>
 
       <div className="min-w-0 flex-1">
         <Link
           to={`/recipes/${recipe.id}`}
-          className="line-clamp-1 font-semibold tracking-tight text-text hover:text-primary"
+          className="line-clamp-1 font-display text-xl text-text hover:text-primary"
         >
           {recipe.title}
         </Link>

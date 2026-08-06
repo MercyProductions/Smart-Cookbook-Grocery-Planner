@@ -37,10 +37,11 @@ export default function PantryPage() {
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Pantry</h1>
-          <p className="mt-1 max-w-2xl text-sm text-text-muted">Keep staples here, then exclude them from your generated grocery list whenever they are already at home.</p>
+          <p className="text-sm font-semibold text-primary">Cook from what you have</p>
+          <h1 className="mt-1 font-display text-[42px] leading-none text-text">Pantry</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-text-muted">Keep staples here, then exclude them from your generated grocery list whenever they are already at home.</p>
         </div>
-        <Link to="/grocery-list" className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-text hover:bg-primary-soft">Back to groceries</Link>
+        <Link to="/grocery-list" className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-card px-3 text-sm font-semibold text-text hover:bg-primary-soft">Back to groceries</Link>
       </div>
 
       <form onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 gap-2 border-y border-border py-4 sm:grid-cols-[minmax(0,1fr)_180px_auto]">
@@ -60,12 +61,12 @@ export default function PantryPage() {
         </div>
       ) : (
         <div className="mt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">Already have ({items.length})</h2>
+          <h2 className="font-display text-2xl text-text">Already have ({items.length})</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {items.map((item) => (
-              <span key={item.name} className="inline-flex items-center gap-1 rounded-full border border-border bg-card py-1 pl-3 pr-1 text-sm">
+              <span key={item.name} className="inline-flex items-center gap-1 rounded-md border border-border bg-card py-1 pl-3 pr-1 text-sm">
                 {item.name}
-                <button type="button" aria-label={`Remove ${item.name} from pantry`} onClick={() => removeItem(item.name)} className="flex h-6 w-6 items-center justify-center rounded-full text-text-muted hover:bg-primary-soft hover:text-red-600"><X size={13} /></button>
+                <button type="button" aria-label={`Remove ${item.name} from pantry`} onClick={() => removeItem(item.name)} className="flex h-6 w-6 items-center justify-center rounded-md text-text-muted hover:bg-primary-soft hover:text-red-600"><X size={13} /></button>
               </span>
             ))}
           </div>
@@ -73,7 +74,7 @@ export default function PantryPage() {
       )}
 
       <section className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-text-muted">Common staples</h2>
+        <h2 className="font-display text-2xl text-text">Common staples</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {STARTERS.filter((item) => !pantryNames.has(item)).map((item) => (
             <button type="button" key={item} onClick={() => add(item, item.includes('salt') || item.includes('pepper') || item.includes('powder') ? 'spices' : 'pantry')} className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card px-3 text-xs font-medium text-text-muted hover:bg-primary-soft hover:text-primary"><Plus size={13} />{item}</button>

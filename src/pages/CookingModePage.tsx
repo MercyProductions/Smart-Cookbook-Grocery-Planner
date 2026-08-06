@@ -18,7 +18,7 @@ export default function CookingModePage() {
   if (!recipe) {
     return (
       <div className="py-16 text-center">
-        <h1 className="text-xl font-semibold">Recipe not found</h1>
+        <h1 className="font-display text-3xl">Recipe not found</h1>
         <Link to="/recipes" className="mt-3 inline-block text-sm font-medium text-primary">Back to recipes</Link>
       </div>
     );
@@ -41,8 +41,8 @@ export default function CookingModePage() {
     <div className="mx-auto max-w-3xl">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-primary">Cooking mode</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">{activeRecipe.title}</h1>
+          <p className="text-sm font-semibold text-primary">Cooking mode</p>
+          <h1 className="mt-1 font-display text-[38px] leading-none">{activeRecipe.title}</h1>
         </div>
         <Link to={`/recipes/${activeRecipe.id}`} aria-label="Exit cooking mode" className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card text-text-muted hover:bg-primary-soft"><X size={18} /></Link>
       </div>
@@ -55,7 +55,7 @@ export default function CookingModePage() {
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-primary-soft">
           <div className="h-full rounded-full bg-primary transition-all duration-300" style={{ width: `${((stepIndex + 1) / instructions.length) * 100}%` }} />
         </div>
-        <p className="mt-8 text-2xl font-medium leading-relaxed sm:text-3xl">{step}</p>
+        <p className="mt-8 font-display text-[31px] leading-[1.25] sm:text-[38px]">{step}</p>
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-3">

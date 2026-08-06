@@ -46,7 +46,7 @@ export default function RecipeDetailPage() {
     return (
       <div className="flex flex-col items-center gap-3 py-16 text-center">
         <span className="text-5xl">🔍</span>
-        <h1 className="text-xl font-semibold tracking-tight">Recipe not found</h1>
+        <h1 className="font-display text-3xl">Recipe not found</h1>
         <p className="text-text-muted">This recipe may have been removed.</p>
         <Link
           to="/recipes"
@@ -108,9 +108,9 @@ export default function RecipeDetailPage() {
             <RecipeImage image={recipe.image} category={recipe.category} className="aspect-[4/3] w-full" />
             <div className="space-y-4 p-5">
               <div>
-                <span className="text-xs font-medium text-primary">{CATEGORY_LABELS[recipe.category]}</span>
-                <h1 className="mt-1 text-xl font-semibold tracking-tight">{recipe.title}</h1>
-                <p className="mt-1 text-sm text-text-muted">{recipe.description}</p>
+                <span className="text-xs font-semibold uppercase text-primary">{CATEGORY_LABELS[recipe.category]}</span>
+                <h1 className="mt-1 font-display text-[34px] leading-[1.05] text-text">{recipe.title}</h1>
+                <p className="mt-3 text-sm leading-6 text-text-muted">{recipe.description}</p>
                 {recipe.cuisine && <p className="mt-2 text-xs font-medium text-text-muted">{recipe.cuisine} cuisine</p>}
               </div>
 
@@ -200,7 +200,7 @@ export default function RecipeDetailPage() {
 
         <div>
           <section>
-            <h2 className="text-lg font-semibold tracking-tight">Ingredients</h2>
+            <h2 className="font-display text-3xl">Ingredients</h2>
             <p className="text-xs text-text-muted">For {servings} {servings === 1 ? 'serving' : 'servings'}</p>
             <ul className="mt-3 space-y-2">
               {scaledIngredients.map((ingredient, index) => (
@@ -219,7 +219,7 @@ export default function RecipeDetailPage() {
           </section>
 
           <section className="mt-8">
-            <h2 className="text-lg font-semibold tracking-tight">Instructions</h2>
+            <h2 className="font-display text-3xl">Instructions</h2>
             <ol className="mt-3 space-y-4">
               {recipe.instructions.map((step, index) => (
                 <li key={index} className="flex gap-3 text-sm leading-relaxed text-text">
@@ -234,7 +234,7 @@ export default function RecipeDetailPage() {
 
           {recipe.notes && (
             <section className="mt-8 border-t border-border pt-6">
-              <h2 className="text-lg font-semibold tracking-tight">Notes</h2>
+              <h2 className="font-display text-3xl">Notes</h2>
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-muted">{recipe.notes}</p>
             </section>
           )}

@@ -53,14 +53,17 @@ export default function SettingsPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-      <p className="mt-1 text-sm text-text-muted">Tune the app defaults and clear local data when needed.</p>
+    <div className="pb-10">
+      <section className="border-b border-border pb-7">
+        <p className="text-sm font-semibold text-primary">Make it yours</p>
+        <h1 className="mt-1 font-display text-[45px] leading-none text-text">Settings</h1>
+        <p className="mt-3 text-sm text-text-muted">Tune the defaults that shape your kitchen.</p>
+      </section>
 
-      <div className="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_360px]">
+      <div className="mt-7 grid grid-cols-1 gap-5 lg:grid-cols-[1fr_360px]">
         <div className="space-y-5">
           <Card className="p-5">
-            <h2 className="text-lg font-semibold tracking-tight">Theme</h2>
+            <h2 className="font-display text-2xl">Theme</h2>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {THEME_OPTIONS.map((option) => {
                 const Icon = option.icon;
@@ -71,7 +74,7 @@ export default function SettingsPage() {
                     type="button"
                     aria-pressed={active}
                     onClick={() => setTheme(option.value)}
-                    className={`rounded-2xl border p-4 text-left transition-colors ${
+                    className={`rounded-lg border p-4 text-left transition-colors ${
                       active
                         ? 'border-primary bg-primary-soft text-text'
                         : 'border-border bg-card text-text hover:bg-primary-soft/60'
@@ -89,11 +92,11 @@ export default function SettingsPage() {
           <Card className="p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold tracking-tight">Default Servings</h2>
+                <h2 className="font-display text-2xl">Default Servings</h2>
                 <p className="mt-1 text-sm text-text-muted">Used when you create a new custom recipe.</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
                   <Users size={18} />
                 </span>
                 <Stepper
@@ -109,7 +112,7 @@ export default function SettingsPage() {
         </div>
 
         <Card className="p-5 lg:self-start">
-          <h2 className="text-lg font-semibold tracking-tight">Local Data</h2>
+          <h2 className="font-display text-2xl">Local Data</h2>
           <p className="mt-2 text-sm text-text-muted">
             Recipes, favorites, meal plan, groceries, pantry staples, cooking history, and settings are stored on this device.
           </p>
