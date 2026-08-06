@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { MealPlanEntry, Recipe } from '@/types';
-import { buildGroceryList } from './grocery';
+import { buildGroceryList, excludePantryItems } from './grocery';
 import { formatQuantity } from './units';
 
 function makeRecipe(overrides: Pick<Recipe, 'id' | 'title' | 'servings' | 'ingredients'>): Recipe {
@@ -103,6 +103,19 @@ describe('buildGroceryList', () => {
     expect(formatQuantity(result[0].quantity)).toBe('½');
   });
 
+  test('keeps smaller converted amounts in a practical display unit', () => {
+    const recipe = makeRecipe({
+      id: 'a',
+      title: 'Recipe A',
+      servings: 4,
+      ingredients: [{ name: 'unsalted butter', quantity: 3, unit: 'tbsp', groceryCategory: 'dairy-eggs' }],
+    });
+
+    const result = buildGroceryList([entry('a', 4)], [recipe]);
+
+    expect(result[0]).toMatchObject({ quantity: 3, unit: 'tbsp' });
+  });
+
   test('merges to-taste ingredients from multiple recipes into a single line', () => {
     const recipes = ['a', 'b', 'c'].map((id, index) =>
       makeRecipe({
@@ -135,6 +148,35 @@ describe('buildGroceryList', () => {
 
     const result = buildGroceryList([entry('a', 4), entry('deleted-recipe', 2)], [recipe]);
     expect(result).toHaveLength(1);
+  });
+
+  test('merges conservative ingredient aliases such as lean ground beef', () => {
+    const recipeA = makeRecipe({
+      id: 'a',
+      title: 'Tacos',
+      servings: 4,
+      ingredients: [{ name: 'ground beef', quantity: 1, unit: 'lb', groceryCategory: 'meat-seafood' }],
+    });
+    const recipeB = makeRecipe({
+      id: 'b',
+      title: 'Chili',
+      servings: 4,
+      ingredients: [{ name: 'lean ground beef', quantity: 16, unit: 'oz', groceryCategory: 'meat-seafood' }],
+    });
+
+    const result = buildGroceryList([entry('a', 4), entry('b', 4)], [recipeA, recipeB]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ name: 'ground beef', quantity: 2, unit: 'lb' });
+  });
+
+  test('excludes only ingredients explicitly marked as pantry staples', () => {
+    const items = [
+      { key: 'salt|to-taste', name: 'salt', quantity: 0, unit: 'to-taste' as const, category: 'spices' as const, sourceRecipes: [], sources: [], isCustom: false as const },
+      { key: 'pepper|to-taste', name: 'black pepper', quantity: 0, unit: 'to-taste' as const, category: 'spices' as const, sourceRecipes: [], sources: [], isCustom: false as const },
+    ];
+
+    expect(excludePantryItems(items, ['Salt'])).toEqual([items[1]]);
   });
 
   test('sorts by grocery category order, then alphabetically within category', () => {

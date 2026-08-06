@@ -3,6 +3,7 @@ import {
   Heart,
   Home,
   Plus,
+  PackageOpen,
   Settings,
   ShoppingBasket,
   UtensilsCrossed,
@@ -26,6 +27,7 @@ export const PRIMARY_NAV_ITEMS: NavItem[] = [
 
 export const SECONDARY_NAV_ITEMS: NavItem[] = [
   { to: '/favorites', label: 'Favorites', icon: Heart },
+  { to: '/pantry', label: 'Pantry', icon: PackageOpen },
   { to: '/recipes/new', label: 'Add Recipe', icon: Plus },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];

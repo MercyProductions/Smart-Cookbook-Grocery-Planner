@@ -6,13 +6,18 @@ Authored by Fable 5 (architect). Executed by Sonnet (builder).
 
 A single-page web app that feels like a real product:
 
-1. **Browse** a library of ~24 seeded recipes with search and filters.
-2. **Select** recipes into a Meal Plan, adjusting servings per recipe.
+1. **Browse** a library of 2,000+ seeded recipes with search, dietary filters, and infinite scrolling.
+2. **Plan** recipes in dated breakfast, lunch, and dinner slots, adjusting servings per meal.
 3. **Generate** a grocery list automatically from the meal plan — duplicate ingredients merged, quantities summed, grouped by store aisle.
-4. **Shop** with a checkable, editable grocery list that survives reloads.
-5. **Manage** recipes: favorite them, and add/edit/delete custom recipes through an in-app editor.
+4. **Shop** with a checkable, editable grocery list that can exclude pantry staples and survives reloads.
+5. **Cook** in a focused step-by-step mode, then use local history and recommendations to decide the next meal.
+6. **Manage** recipes: favorite them, and add/edit/delete custom recipes through an in-app editor.
 
 No backend. No auth. All persistence via localStorage (through Zustand `persist`).
+
+## Current implementation note
+
+The current app includes a 2,237-recipe catalog with infinite scrolling, a week-based calendar planner, custom grocery date ranges, pantry exclusions, editable shopping lines with source details, cooking mode, local meal history, and Pick for me recommendations.
 
 ## 2. Tech stack and rationale
 
@@ -41,7 +46,10 @@ src/
   types/
     index.ts             # ALL shared types (see DATA_MODELS.md)
   data/
-    recipes.ts           # ~24 seed recipes (SeedRecipe[])
+    recipes.ts           # core seed recipes plus the expanded catalog
+    expandedRecipes.ts   # first expanded breakfast, lunch, dinner, dessert, and snack recipes
+    moreRecipes.ts       # additional breakfast, lunch, and dinner recipes
+    generatedRecipes.ts  # deterministic recipe atlas combining curated flavors and formats
     vocabulary.ts        # canonical ingredient names, units, categories
   lib/
     grocery.ts           # buildGroceryList() — pure aggregation logic

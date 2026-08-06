@@ -2,6 +2,10 @@
 
 All types live in `src/types/index.ts` exactly as specified here. The grocery aggregation algorithm (§4) is the most delicate logic in the app — implement it as pure functions in `src/lib/` and unit-test it before wiring UI.
 
+## Current extensions
+
+The runtime types in `src/types/index.ts` are the source of truth. The baseline model below is extended with recipe `cuisine` and `notes`, dated `MealPlanEntry` meal slots, pantry items, grocery line overrides, source contribution details, and expanded grocery aisle categories. Older local meal plans are migrated to dated entries on load.
+
 ## 1. Core types
 
 ```ts
@@ -166,9 +170,9 @@ Because generated keys are stable (`name|family`), check-offs survive reloads AN
 6. Entry with a deleted recipeId → skipped, no crash.
 7. Category ordering and alphabetical order within a category.
 
-## 5. Seed data requirements (`src/data/recipes.ts`)
+## 5. Seed data requirements (`src/data/recipes.ts`, `src/data/expandedRecipes.ts`, `src/data/moreRecipes.ts`, and `src/data/generatedRecipes.ts`)
 
-- 24 recipes: 4 breakfast, 4 lunch, 8 dinner, 4 dessert, 4 snack.
+- The shipped catalog contains 2,237 recipes, grouped by breakfast, lunch, dinner, dessert, and snack. The generated atlas combines curated flavor profiles with distinct recipe formats; every result still uses canonical grocery ingredients and a complete detail page.
 - Every dietary tag used by ≥ 2 recipes; difficulties roughly 10 easy / 10 medium / 4 hard; total times spread from 10 to 90 minutes.
 - Realistic ingredients and real, numbered instructions (5–10 steps) — no lorem ipsum; this is what makes the app feel like a product.
 - At least 6 pairs of recipes sharing a staple with compatible units, and one deliberate incompatible-unit pair (e.g., one recipe using `ml` milk) so both merge behaviors demo out of the box.

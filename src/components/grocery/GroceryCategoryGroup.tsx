@@ -1,4 +1,4 @@
-import type { GroceryCategory, GroceryLine } from '@/types';
+import type { GroceryCategory, GroceryLine, Unit } from '@/types';
 import { GROCERY_CATEGORY_LABELS } from '@/lib/labels';
 import { GroceryItemRow } from './GroceryItemRow';
 
@@ -7,9 +7,10 @@ interface GroceryCategoryGroupProps {
   lines: GroceryLine[];
   onToggle: (key: string) => void;
   onRemove: (line: GroceryLine) => void;
+  onUpdate: (line: GroceryLine, patch: { quantity?: number; unit?: Unit; note?: string }) => void;
 }
 
-export function GroceryCategoryGroup({ category, lines, onToggle, onRemove }: GroceryCategoryGroupProps) {
+export function GroceryCategoryGroup({ category, lines, onToggle, onRemove, onUpdate }: GroceryCategoryGroupProps) {
   const unchecked = lines.filter((line) => !line.checked);
   const checked = lines.filter((line) => line.checked);
 
@@ -25,6 +26,7 @@ export function GroceryCategoryGroup({ category, lines, onToggle, onRemove }: Gr
             line={line}
             onToggle={() => onToggle(line.key)}
             onRemove={() => onRemove(line)}
+            onUpdate={(patch) => onUpdate(line, patch)}
           />
         ))}
       </div>
@@ -37,6 +39,7 @@ export function GroceryCategoryGroup({ category, lines, onToggle, onRemove }: Gr
               line={line}
               onToggle={() => onToggle(line.key)}
               onRemove={() => onRemove(line)}
+              onUpdate={(patch) => onUpdate(line, patch)}
             />
           ))}
         </div>

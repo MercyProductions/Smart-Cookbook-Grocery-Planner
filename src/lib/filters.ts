@@ -20,14 +20,26 @@ export function isFilterStateActive(filters: RecipeFilterState): boolean {
 
 export function applyRecipeFilters(recipes: Recipe[], filters: RecipeFilterState): Recipe[] {
   const query = filters.query.trim().toLowerCase();
+  const durationMatch = query.match(/\b(\d+)\s*(?:min(?:ute)?s?)\b/);
+  const requestedMinutes = durationMatch ? Number(durationMatch[1]) : null;
+  const keywordQuery = query.replace(/\b\d+\s*(?:min(?:ute)?s?)\b/, '').trim();
 
   return recipes.filter((recipe) => {
-    if (query) {
-      const matchesTitle = recipe.title.toLowerCase().includes(query);
-      const matchesIngredient = recipe.ingredients.some((ingredient) =>
-        ingredient.name.toLowerCase().includes(query),
-      );
-      if (!matchesTitle && !matchesIngredient) return false;
+    if (keywordQuery) {
+      const searchText = [
+        recipe.title,
+        recipe.description,
+        recipe.category,
+        recipe.cuisine ?? '',
+        recipe.notes ?? '',
+        recipe.tags.join(' '),
+        recipe.ingredients.map((ingredient) => ingredient.name).join(' '),
+      ].join(' ').toLowerCase();
+      if (!searchText.includes(keywordQuery)) return false;
+    }
+
+    if (requestedMinutes !== null && recipe.prepMinutes + recipe.cookMinutes > requestedMinutes) {
+      return false;
     }
 
     if (filters.category !== 'all' && recipe.category !== filters.category) return false;

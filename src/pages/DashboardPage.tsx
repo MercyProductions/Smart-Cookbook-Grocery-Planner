@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Search, ShoppingBasket, UtensilsCrossed, type LucideIcon } from 'lucide-react';
+import { Dices, Heart, Search, ShoppingBasket, UtensilsCrossed, type LucideIcon } from 'lucide-react';
 import type { GroceryLine, Recipe, RecipeCategory } from '@/types';
 import { CATEGORY_EMOJI, CATEGORY_LABELS } from '@/lib/labels';
-import { buildGroceryList, overlayGroceryState } from '@/lib/grocery';
+import { buildGroceryList, excludePantryItems, overlayGroceryState } from '@/lib/grocery';
+import { addDays, entryMatchesDateRange, startOfWeek, todayKey } from '@/lib/dates';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useGroceryStore } from '@/stores/useGroceryStore';
 import { useMealPlanStore } from '@/stores/useMealPlanStore';
+import { useMealHistoryStore } from '@/stores/useMealHistoryStore';
+import { usePantryStore } from '@/stores/usePantryStore';
 import { useAllRecipes } from '@/stores/useRecipeStore';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { RecipeImage } from '@/components/recipes/RecipeImage';
+import { Button } from '@/components/ui/Button';
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as RecipeCategory[];
 
@@ -29,6 +33,27 @@ function featuredForToday(recipes: Recipe[]): Recipe[] {
     .slice(0, 4);
 }
 
+function pickRecommendation(
+  recipes: Recipe[],
+  favoriteIds: string[],
+  pantryNames: string[],
+  recentRecipeIds: string[],
+): Recipe | undefined {
+  const favorites = new Set(favoriteIds);
+  const pantry = new Set(pantryNames);
+  const recent = new Set(recentRecipeIds.slice(0, 6));
+  const withoutRecent = recipes.filter((recipe) => !recent.has(recipe.id));
+  const candidates = withoutRecent.length >= 12 ? withoutRecent : recipes;
+  const scored = candidates
+    .map((recipe) => ({
+      recipe,
+      score: (favorites.has(recipe.id) ? 4 : 0) + recipe.ingredients.filter((ingredient) => pantry.has(ingredient.name)).length,
+    }))
+    .sort((a, b) => b.score - a.score);
+  const pool = scored.slice(0, Math.min(40, scored.length));
+  return pool[Math.floor(Math.random() * pool.length)]?.recipe;
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const allRecipes = useAllRecipes();
@@ -36,9 +61,14 @@ export default function DashboardPage() {
   const checkedKeys = useGroceryStore((state) => state.checkedKeys);
   const removedKeys = useGroceryStore((state) => state.removedKeys);
   const customItems = useGroceryStore((state) => state.customItems);
+  const itemOverrides = useGroceryStore((state) => state.itemOverrides);
+  const excludePantry = useGroceryStore((state) => state.excludePantry);
   const favoriteIds = useFavoritesStore((state) => state.favoriteIds);
+  const cookedMeals = useMealHistoryStore((state) => state.cookedMeals);
+  const pantryItems = usePantryStore((state) => state.items);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [pickedRecipe, setPickedRecipe] = useState<Recipe | undefined>();
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setLoading(false), 300);
@@ -46,20 +76,45 @@ export default function DashboardPage() {
   }, []);
 
   const groceryLines = useMemo<GroceryLine[]>(() => {
-    const items = buildGroceryList(entries, allRecipes);
-    return overlayGroceryState(items, { checkedKeys, removedKeys, customItems });
-  }, [allRecipes, entries, checkedKeys, removedKeys, customItems]);
+    const weekStart = startOfWeek(todayKey());
+    const scopedEntries = entries.filter((entry) => entryMatchesDateRange(entry, weekStart, addDays(weekStart, 6)));
+    const generated = buildGroceryList(scopedEntries, allRecipes);
+    const items = excludePantry ? excludePantryItems(generated, pantryItems.map((item) => item.name)) : generated;
+    return overlayGroceryState(items, { checkedKeys, removedKeys, customItems, itemOverrides });
+  }, [allRecipes, customItems, entries, excludePantry, itemOverrides, pantryItems, checkedKeys, removedKeys]);
 
   const featured = useMemo(() => featuredForToday(allRecipes), [allRecipes]);
   const plannedRecipes = entries
     .map((entry) => ({ entry, recipe: allRecipes.find((recipe) => recipe.id === entry.recipeId) }))
     .filter((item): item is { entry: (typeof entries)[number]; recipe: Recipe } => Boolean(item.recipe))
     .slice(0, 4);
+  const cookedWithRecipes = cookedMeals
+    .map((meal) => ({ meal, recipe: allRecipes.find((recipe) => recipe.id === meal.recipeId) }))
+    .filter((item): item is { meal: (typeof cookedMeals)[number]; recipe: Recipe } => Boolean(item.recipe));
+  const recentlyCooked = cookedWithRecipes.filter((item, index, list) =>
+    list.findIndex((candidate) => candidate.recipe.id === item.recipe.id) === index,
+  ).slice(0, 4);
+  const frequentlyCooked = Array.from(
+    cookedWithRecipes.reduce((counts, item) => {
+      const current = counts.get(item.recipe.id) ?? { recipe: item.recipe, count: 0 };
+      counts.set(item.recipe.id, { ...current, count: current.count + 1 });
+      return counts;
+    }, new Map<string, { recipe: Recipe; count: number }>() ).values(),
+  ).sort((left, right) => right.count - left.count || left.recipe.title.localeCompare(right.recipe.title)).slice(0, 3);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = query.trim();
     navigate(trimmed ? `/recipes?q=${encodeURIComponent(trimmed)}` : '/recipes');
+  }
+
+  function handlePickForMe() {
+    setPickedRecipe(pickRecommendation(
+      allRecipes,
+      favoriteIds,
+      pantryItems.map((item) => item.name),
+      cookedMeals.map((meal) => meal.recipeId),
+    ));
   }
 
   return (
@@ -100,6 +155,26 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      <section className="mt-8 border-y border-border py-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">What should we eat?</h2>
+            <p className="mt-1 text-sm text-text-muted">A fresh suggestion that favors your pantry and avoids meals you cooked recently.</p>
+          </div>
+          <Button onClick={handlePickForMe}><Dices size={16} />Pick for me</Button>
+        </div>
+        {pickedRecipe && (
+          <Link to={`/recipes/${pickedRecipe.id}`} className="mt-4 flex items-center gap-4 rounded-lg border border-border bg-card p-3 hover:bg-primary-soft/50">
+            <RecipeImage image={pickedRecipe.image} category={pickedRecipe.category} className="h-16 w-16 rounded-lg" />
+            <span className="min-w-0">
+              <span className="block text-xs font-medium text-primary">Tonight's idea</span>
+              <span className="mt-1 block line-clamp-1 font-semibold tracking-tight">{pickedRecipe.title}</span>
+              <span className="mt-1 block text-xs text-text-muted">{pickedRecipe.prepMinutes + pickedRecipe.cookMinutes} min · {pickedRecipe.servings} servings</span>
+            </span>
+          </Link>
+        )}
+      </section>
+
       <section className="mt-8">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold tracking-tight">Featured</h2>
@@ -134,6 +209,31 @@ export default function DashboardPage() {
               ))}
         </div>
       </section>
+
+      {recentlyCooked.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">Recently cooked</h2>
+            <span className="text-xs text-text-muted">Your cooking history stays on this device.</span>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {recentlyCooked.map(({ meal, recipe }) => (
+              <Link key={meal.id} to={`/recipes/${recipe.id}`} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:bg-primary-soft/50">
+                <RecipeImage image={recipe.image} category={recipe.category} className="h-12 w-12 rounded-lg" />
+                <span className="min-w-0">
+                  <span className="block line-clamp-1 text-sm font-semibold">{recipe.title}</span>
+                  <span className="mt-1 block text-xs text-text-muted">Cooked {new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(new Date(meal.cookedAt))}</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+          {frequentlyCooked.length > 0 && (
+            <p className="mt-4 text-sm text-text-muted">
+              Most cooked: {frequentlyCooked.map((item) => `${item.recipe.title} (${item.count})`).join(', ')}
+            </p>
+          )}
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold tracking-tight">Quick links</h2>

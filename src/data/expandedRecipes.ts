@@ -1,0 +1,691 @@
+import type { DietaryTag, Difficulty, Ingredient, Recipe, RecipeCategory, Unit } from '@/types';
+import { findVocabularyEntry } from './vocabulary';
+
+type IngredientSpec = readonly [name: string, quantity: number, unit: Unit, note?: string];
+
+export interface CatalogRecipe {
+  id: string;
+  title: string;
+  description: string;
+  category: RecipeCategory;
+  tags: DietaryTag[];
+  time: readonly [prepMinutes: number, cookMinutes: number];
+  servings: number;
+  difficulty: Difficulty;
+  emoji: string;
+  ingredients: IngredientSpec[];
+  instructions: string[];
+}
+
+export function a(name: string, quantity: number, unit: Unit, note?: string): IngredientSpec {
+  return [name, quantity, unit, note];
+}
+
+function makeIngredient([name, quantity, unit, note]: IngredientSpec): Ingredient {
+  const vocabulary = findVocabularyEntry(name);
+  if (!vocabulary) throw new Error(`Unknown ingredient "${name}" in expanded recipe catalog.`);
+  return {
+    name,
+    quantity,
+    unit,
+    groceryCategory: vocabulary.groceryCategory,
+    ...(note ? { note } : {}),
+  };
+}
+
+export function makeRecipe(input: CatalogRecipe): Recipe {
+  return {
+    id: input.id,
+    title: input.title,
+    description: input.description,
+    category: input.category,
+    tags: input.tags,
+    prepMinutes: input.time[0],
+    cookMinutes: input.time[1],
+    servings: input.servings,
+    difficulty: input.difficulty,
+    image: { emoji: input.emoji },
+    ingredients: input.ingredients.map(makeIngredient),
+    instructions: input.instructions,
+    isCustom: false,
+    createdAt: '2026-02-01T00:00:00.000Z',
+    updatedAt: '2026-02-01T00:00:00.000Z',
+  };
+}
+
+const CATALOG: CatalogRecipe[] = [
+  // Breakfast
+  {
+    id: 'seed-spinach-feta-omelet', title: 'Spinach & Feta Omelet',
+    description: 'A tender herb omelet with wilted spinach and salty feta for a fast, filling breakfast.',
+    category: 'breakfast', tags: ['vegetarian', 'high-protein', 'low-carb', 'quick'], time: [5, 8], servings: 1, difficulty: 'easy', emoji: '🍳',
+    ingredients: [a('egg', 3, 'unit'), a('spinach', 0.25, 'bunch'), a('feta cheese', 2, 'tbsp'), a('olive oil', 1, 'tsp'), a('black pepper', 0, 'to-taste')],
+    instructions: ['Whisk the eggs with pepper until smooth.', 'Warm the oil in a nonstick skillet, add spinach, and cook until wilted.', 'Pour in the eggs, scatter over feta, fold when set, and serve hot.'],
+  },
+  {
+    id: 'seed-berry-yogurt-parfait', title: 'Berry Yogurt Parfait',
+    description: 'Layers of creamy yogurt, bright berries, crunchy oats, and honey that can be made ahead.',
+    category: 'breakfast', tags: ['vegetarian', 'healthy', 'quick', 'high-protein'], time: [8, 0], servings: 2, difficulty: 'easy', emoji: '🫐',
+    ingredients: [a('plain greek yogurt', 1.5, 'cup'), a('frozen mixed berries', 1, 'cup', 'thawed'), a('rolled oats', 0.5, 'cup'), a('honey', 2, 'tbsp')],
+    instructions: ['Stir the yogurt until smooth and loosen the berries if frozen.', 'Layer yogurt, berries, oats, and honey in two jars.', 'Chill for at least 20 minutes or serve immediately.'],
+  },
+  {
+    id: 'seed-breakfast-burritos', title: 'Freezer Breakfast Burritos',
+    description: 'Make-ahead burritos packed with eggs, black beans, peppers, and cheese for busy mornings.',
+    category: 'breakfast', tags: ['vegetarian', 'high-protein', 'meal-prep', 'budget-friendly'], time: [15, 15], servings: 6, difficulty: 'easy', emoji: '🌯',
+    ingredients: [a('tortilla', 6, 'unit'), a('egg', 8, 'unit'), a('canned black beans', 1, 'can', 'drained'), a('red bell pepper', 1, 'unit', 'diced'), a('cheddar cheese', 1, 'cup', 'shredded'), a('salsa', 0.5, 'cup')],
+    instructions: ['Scramble the eggs with the pepper until just set, then fold in the beans.', 'Fill each tortilla with the egg mixture, cheese, and salsa; roll tightly.', 'Serve warm or wrap and freeze for up to one month, reheating until hot.'],
+  },
+  {
+    id: 'seed-banana-oatmeal', title: 'Banana Cinnamon Oatmeal',
+    description: 'Creamy stovetop oats sweetened with ripe banana and maple syrup with no refined sugar needed.',
+    category: 'breakfast', tags: ['vegan', 'vegetarian', 'healthy', 'high-fiber', 'quick'], time: [5, 8], servings: 2, difficulty: 'easy', emoji: '🥣',
+    ingredients: [a('rolled oats', 1, 'cup'), a('almond milk', 2, 'cup'), a('banana', 1, 'unit', 'mashed'), a('ground cinnamon', 1, 'tsp'), a('maple syrup', 1, 'tbsp')],
+    instructions: ['Bring the almond milk to a gentle simmer in a saucepan.', 'Stir in oats, banana, and cinnamon and cook until creamy, about 6 minutes.', 'Divide into bowls and finish with maple syrup and banana slices.'],
+  },
+  {
+    id: 'seed-veggie-frittata', title: 'Garden Vegetable Frittata',
+    description: 'An oven-finished egg dish full of mushrooms, tomatoes, spinach, and feta that slices beautifully.',
+    category: 'breakfast', tags: ['vegetarian', 'gluten-free', 'high-protein', 'meal-prep'], time: [10, 20], servings: 4, difficulty: 'easy', emoji: '🥚',
+    ingredients: [a('egg', 8, 'unit'), a('mushroom', 6, 'oz', 'sliced'), a('tomato', 1, 'unit', 'diced'), a('spinach', 0.5, 'bunch'), a('feta cheese', 0.5, 'cup'), a('olive oil', 1, 'tbsp')],
+    instructions: ['Heat the oven to 375°F and sauté mushrooms and tomato in an oven-safe skillet.', 'Add spinach, whisked eggs, and feta; cook until the edges begin to set.', 'Bake for 10 to 12 minutes until puffed and firm, then slice.'],
+  },
+  {
+    id: 'seed-peanut-butter-banana-toast', title: 'Peanut Butter Banana Toast',
+    description: 'Crisp toast topped with creamy peanut butter, banana, cinnamon, and a drizzle of honey.',
+    category: 'breakfast', tags: ['vegetarian', 'quick', 'kid-friendly', 'budget-friendly'], time: [5, 3], servings: 2, difficulty: 'easy', emoji: '🍌',
+    ingredients: [a('bread', 4, 'slice'), a('peanut butter', 4, 'tbsp'), a('banana', 1, 'unit', 'sliced'), a('honey', 1, 'tbsp'), a('ground cinnamon', 0.25, 'tsp')],
+    instructions: ['Toast the bread until golden.', 'Spread with peanut butter and arrange banana slices on top.', 'Drizzle with honey and dust with cinnamon before serving.'],
+  },
+  {
+    id: 'seed-cottage-cheese-berry-bowl', title: 'Cottage Cheese Berry Bowl',
+    description: 'A high-protein breakfast bowl with creamy cottage cheese, berries, almonds, and honey.',
+    category: 'breakfast', tags: ['vegetarian', 'high-protein', 'gluten-free', 'quick'], time: [5, 0], servings: 2, difficulty: 'easy', emoji: '🍓',
+    ingredients: [a('cottage cheese', 1.5, 'cup'), a('frozen mixed berries', 1, 'cup', 'thawed'), a('almonds', 0.25, 'cup', 'chopped'), a('honey', 2, 'tbsp')],
+    instructions: ['Spoon cottage cheese into two bowls.', 'Top with berries and chopped almonds.', 'Drizzle with honey and serve chilled.'],
+  },
+  {
+    id: 'seed-shakshuka', title: 'Weeknight Shakshuka',
+    description: 'Eggs gently poached in a smoky tomato and pepper sauce for a one-pan breakfast or brunch.',
+    category: 'breakfast', tags: ['vegetarian', 'gluten-free', 'high-protein', 'one-pot', 'budget-friendly'], time: [10, 25], servings: 4, difficulty: 'medium', emoji: '🍅',
+    ingredients: [a('egg', 6, 'unit'), a('canned diced tomatoes', 2, 'can'), a('red bell pepper', 1, 'unit', 'diced'), a('yellow onion', 1, 'unit', 'diced'), a('garlic', 3, 'clove'), a('ground cumin', 1, 'tsp'), a('paprika', 1, 'tsp')],
+    instructions: ['Sauté onion, pepper, and garlic in olive oil until soft.', 'Add tomatoes, cumin, and paprika and simmer until thickened.', 'Make six wells, crack in the eggs, cover, and cook until the whites set.'],
+  },
+  {
+    id: 'seed-sweet-potato-breakfast-hash', title: 'Sweet Potato Breakfast Hash',
+    description: 'Crisp sweet potato, onion, and spinach topped with sunny eggs for a colorful skillet meal.',
+    category: 'breakfast', tags: ['vegetarian', 'gluten-free', 'healthy', 'high-fiber', 'one-pot'], time: [10, 22], servings: 3, difficulty: 'easy', emoji: '🍠',
+    ingredients: [a('sweet potato', 2, 'unit', 'small, diced'), a('yellow onion', 0.5, 'unit', 'diced'), a('spinach', 0.5, 'bunch'), a('egg', 3, 'unit'), a('paprika', 1, 'tsp'), a('olive oil', 2, 'tbsp')],
+    instructions: ['Brown the sweet potato and onion in oil until fork-tender.', 'Stir in spinach and paprika until the spinach wilts.', 'Make wells in the hash, crack in the eggs, cover, and cook until set.'],
+  },
+  {
+    id: 'seed-apple-baked-oats', title: 'Apple Cinnamon Baked Oats',
+    description: 'Soft, cake-like oats studded with apples and warm cinnamon for a make-ahead breakfast.',
+    category: 'breakfast', tags: ['vegetarian', 'healthy', 'high-fiber', 'meal-prep'], time: [10, 35], servings: 6, difficulty: 'easy', emoji: '🍎',
+    ingredients: [a('rolled oats', 2, 'cup'), a('apple', 2, 'unit', 'diced'), a('milk', 1.5, 'cup'), a('egg', 2, 'unit'), a('maple syrup', 0.25, 'cup'), a('ground cinnamon', 1.5, 'tsp')],
+    instructions: ['Heat the oven to 375°F and stir all ingredients together in a greased baking dish.', 'Let the oats stand for 5 minutes to absorb the milk.', 'Bake for 30 to 35 minutes until the center is set and the edges are golden.'],
+  },
+  {
+    id: 'seed-breakfast-quesadilla', title: 'Cheesy Breakfast Quesadilla',
+    description: 'Crisp tortillas filled with fluffy egg, cheddar, and green onion for a quick handheld breakfast.',
+    category: 'breakfast', tags: ['vegetarian', 'quick', 'kid-friendly', 'budget-friendly'], time: [5, 10], servings: 2, difficulty: 'easy', emoji: '🫓',
+    ingredients: [a('tortilla', 2, 'unit'), a('egg', 3, 'unit'), a('cheddar cheese', 0.5, 'cup'), a('green onion', 0.25, 'bunch'), a('olive oil', 1, 'tsp')],
+    instructions: ['Scramble the eggs in a lightly oiled skillet and set aside.', 'Fill each tortilla with egg, cheese, and green onion, then fold.', 'Cook on both sides until crisp and the cheese melts; cut into wedges.'],
+  },
+  {
+    id: 'seed-savory-oatmeal', title: 'Savory Cheddar Oatmeal',
+    description: 'A cozy bowl of oats with cheddar, spinach, and a soft egg for a savory start to the day.',
+    category: 'breakfast', tags: ['vegetarian', 'high-protein', 'quick', 'budget-friendly'], time: [5, 12], servings: 2, difficulty: 'easy', emoji: '🧀',
+    ingredients: [a('rolled oats', 1, 'cup'), a('chicken broth', 2, 'cup'), a('spinach', 0.25, 'bunch'), a('cheddar cheese', 0.5, 'cup'), a('egg', 2, 'unit')],
+    instructions: ['Simmer oats in broth until creamy.', 'Fold in spinach and cheddar until the cheese melts.', 'Top each bowl with a fried or poached egg and season to taste.'],
+  },
+  {
+    id: 'seed-chia-berry-pudding', title: 'Chia Berry Pudding',
+    description: 'A cool, spoonable breakfast made with almond milk, chia seeds, and berries.',
+    category: 'breakfast', tags: ['vegan', 'vegetarian', 'dairy-free', 'gluten-free', 'healthy', 'meal-prep'], time: [10, 0], servings: 4, difficulty: 'easy', emoji: '🥄',
+    ingredients: [a('almond milk', 2, 'cup'), a('chia seeds', 0.5, 'cup'), a('maple syrup', 2, 'tbsp'), a('vanilla extract', 1, 'tsp'), a('frozen mixed berries', 1, 'cup')],
+    instructions: ['Whisk almond milk, chia seeds, maple syrup, and vanilla in a bowl.', 'Rest for 10 minutes, whisk again, and refrigerate overnight.', 'Spoon into jars and top with berries before serving.'],
+  },
+  {
+    id: 'seed-salmon-cream-cheese-bagel', title: 'Salmon Cream Cheese Bagel',
+    description: 'A classic bagel piled with cream cheese, salmon, cucumber, and green onion.',
+    category: 'breakfast', tags: ['pescatarian', 'high-protein', 'quick'], time: [8, 0], servings: 2, difficulty: 'easy', emoji: '🥯',
+    ingredients: [a('bagel', 2, 'unit'), a('cream cheese', 4, 'oz'), a('salmon fillet', 0.5, 'lb', 'cooked and flaked'), a('cucumber', 0.5, 'unit', 'thinly sliced'), a('green onion', 0.25, 'bunch')],
+    instructions: ['Toast the bagels lightly and spread with cream cheese.', 'Layer on cucumber, flaked salmon, and green onion.', 'Season with pepper and serve immediately.'],
+  },
+  {
+    id: 'seed-french-toast', title: 'Vanilla French Toast',
+    description: 'Golden slices of custardy French toast with cinnamon and maple syrup.',
+    category: 'breakfast', tags: ['vegetarian', 'comfort-food', 'kid-friendly', 'quick'], time: [8, 12], servings: 4, difficulty: 'easy', emoji: '🍞',
+    ingredients: [a('bread', 8, 'slice'), a('egg', 3, 'unit'), a('milk', 0.75, 'cup'), a('vanilla extract', 1, 'tsp'), a('ground cinnamon', 1, 'tsp'), a('maple syrup', 0.25, 'cup')],
+    instructions: ['Whisk eggs, milk, vanilla, and cinnamon in a shallow dish.', 'Dip bread briefly on both sides and cook in a buttered skillet until golden.', 'Serve warm with maple syrup.'],
+  },
+  {
+    id: 'seed-breakfast-sandwich', title: 'Veggie Breakfast Sandwich',
+    description: 'A toasted English muffin with egg, cheddar, tomato, and spinach for a portable breakfast.',
+    category: 'breakfast', tags: ['vegetarian', 'quick', 'high-protein', 'kid-friendly'], time: [5, 8], servings: 2, difficulty: 'easy', emoji: '🥪',
+    ingredients: [a('english muffin', 2, 'unit'), a('egg', 2, 'unit'), a('cheddar cheese', 2, 'slice'), a('tomato', 1, 'unit', 'sliced'), a('spinach', 0.25, 'bunch')],
+    instructions: ['Toast the English muffins and wilt the spinach in a skillet.', 'Cook the eggs to your preferred doneness and melt cheddar on top.', 'Stack egg, spinach, and tomato inside each muffin and serve.'],
+  },
+
+  // Lunch
+  {
+    id: 'seed-tuna-cucumber-pitas', title: 'Tuna Cucumber Pitas',
+    description: 'A crunchy, creamy tuna salad tucked into pita with cucumber and romaine.',
+    category: 'lunch', tags: ['pescatarian', 'high-protein', 'quick', 'budget-friendly'], time: [12, 0], servings: 2, difficulty: 'easy', emoji: '🥙',
+    ingredients: [a('canned tuna', 2, 'can', 'drained'), a('mayonnaise', 3, 'tbsp'), a('dijon mustard', 1, 'tsp'), a('cucumber', 0.5, 'unit', 'diced'), a('romaine lettuce', 1, 'unit', 'shredded'), a('pita bread', 2, 'unit')],
+    instructions: ['Stir tuna, mayonnaise, mustard, and cucumber together.', 'Warm the pitas and fill with romaine.', 'Spoon in the tuna salad and serve.'],
+  },
+  {
+    id: 'seed-buffalo-chicken-wraps', title: 'Buffalo Chicken Wraps',
+    description: 'Spicy chicken, crisp romaine, and cool yogurt sauce rolled into a quick lunch wrap.',
+    category: 'lunch', tags: ['high-protein', 'quick', 'meal-prep'], time: [10, 15], servings: 4, difficulty: 'easy', emoji: '🌯',
+    ingredients: [a('chicken breast', 1, 'lb', 'cooked and shredded'), a('tortilla', 4, 'unit'), a('romaine lettuce', 1, 'unit'), a('hot sauce', 4, 'tbsp'), a('plain greek yogurt', 0.5, 'cup'), a('lemon', 0.5, 'unit')],
+    instructions: ['Toss shredded chicken with hot sauce.', 'Stir yogurt and lemon together for a cool dressing.', 'Fill tortillas with lettuce, chicken, and dressing, then roll tightly.'],
+  },
+  {
+    id: 'seed-lentil-vegetable-soup', title: 'Lentil Vegetable Soup',
+    description: 'A hearty, budget-friendly soup with lentils, carrots, celery, tomatoes, and herbs.',
+    category: 'lunch', tags: ['vegan', 'vegetarian', 'dairy-free', 'high-fiber', 'one-pot', 'budget-friendly'], time: [12, 35], servings: 6, difficulty: 'easy', emoji: '🍲',
+    ingredients: [a('lentils', 1.5, 'cup'), a('vegetable broth', 6, 'cup'), a('carrot', 3, 'unit'), a('celery', 3, 'unit'), a('canned diced tomatoes', 1, 'can'), a('yellow onion', 1, 'unit'), a('dried oregano', 1, 'tsp')],
+    instructions: ['Sauté onion, carrot, and celery in olive oil until softened.', 'Add lentils, broth, tomatoes, and oregano and bring to a boil.', 'Simmer until lentils are tender, about 30 minutes, and season before serving.'],
+  },
+  {
+    id: 'seed-caprese-quinoa-salad', title: 'Caprese Quinoa Salad',
+    description: 'A fresh meal-prep salad combining fluffy quinoa, tomatoes, mozzarella, and basil.',
+    category: 'lunch', tags: ['vegetarian', 'gluten-free', 'healthy', 'mediterranean', 'meal-prep'], time: [10, 18], servings: 4, difficulty: 'easy', emoji: '🥗',
+    ingredients: [a('quinoa', 1, 'cup'), a('tomato', 2, 'unit', 'diced'), a('mozzarella cheese', 0.75, 'cup'), a('fresh basil', 0.25, 'bunch'), a('lemon', 1, 'unit'), a('olive oil', 3, 'tbsp')],
+    instructions: ['Cook quinoa according to package directions and cool slightly.', 'Toss quinoa with tomato, mozzarella, basil, olive oil, and lemon.', 'Season to taste and portion into containers.'],
+  },
+  {
+    id: 'seed-sweet-potato-black-bean-tacos', title: 'Sweet Potato Black Bean Tacos',
+    description: 'Roasted sweet potato and smoky black beans make a satisfying plant-based taco filling.',
+    category: 'lunch', tags: ['vegan', 'vegetarian', 'dairy-free', 'high-fiber', 'budget-friendly'], time: [10, 25], servings: 4, difficulty: 'easy', emoji: '🌮',
+    ingredients: [a('sweet potato', 2, 'unit', 'diced'), a('canned black beans', 1, 'can', 'drained'), a('tortilla', 8, 'unit'), a('avocado', 1, 'unit'), a('lime', 1, 'unit'), a('ground cumin', 1, 'tsp'), a('smoked paprika', 1, 'tsp')],
+    instructions: ['Toss sweet potato with oil, cumin, and smoked paprika and roast at 425°F until tender.', 'Warm the beans with a splash of water and season to taste.', 'Fill tortillas with sweet potato, beans, avocado, and lime.'],
+  },
+  {
+    id: 'seed-turkey-avocado-club', title: 'Turkey Avocado Club',
+    description: 'A stacked sandwich with deli turkey, bacon, tomato, lettuce, and creamy avocado.',
+    category: 'lunch', tags: ['high-protein', 'quick', 'kid-friendly'], time: [10, 8], servings: 2, difficulty: 'easy', emoji: '🥪',
+    ingredients: [a('bread', 6, 'slice'), a('deli turkey', 8, 'oz'), a('bacon', 4, 'oz'), a('avocado', 1, 'unit'), a('tomato', 1, 'unit'), a('romaine lettuce', 1, 'unit')],
+    instructions: ['Cook bacon until crisp and toast the bread.', 'Layer turkey, bacon, tomato, lettuce, and avocado between the toast.', 'Cut each sandwich into triangles and serve.'],
+  },
+  {
+    id: 'seed-greek-chickpea-salad', title: 'Greek Chickpea Salad',
+    description: 'A bright Mediterranean salad of chickpeas, cucumber, tomato, red onion, and feta.',
+    category: 'lunch', tags: ['vegetarian', 'gluten-free', 'healthy', 'mediterranean', 'high-fiber'], time: [15, 0], servings: 4, difficulty: 'easy', emoji: '🫒',
+    ingredients: [a('canned chickpeas', 2, 'can', 'drained'), a('cucumber', 1, 'unit', 'diced'), a('tomato', 2, 'unit', 'diced'), a('red onion', 0.5, 'unit'), a('feta cheese', 0.5, 'cup'), a('lemon', 1, 'unit'), a('olive oil', 3, 'tbsp')],
+    instructions: ['Combine chickpeas, cucumber, tomato, onion, and feta in a bowl.', 'Whisk lemon juice and olive oil together.', 'Toss with the dressing, season, and chill before serving.'],
+  },
+  {
+    id: 'seed-tomato-mozzarella-panini', title: 'Tomato Mozzarella Panini',
+    description: 'Golden pressed bread filled with melty mozzarella, juicy tomato, and fresh basil.',
+    category: 'lunch', tags: ['vegetarian', 'quick', 'comfort-food', 'budget-friendly'], time: [8, 8], servings: 2, difficulty: 'easy', emoji: '🥖',
+    ingredients: [a('bread', 4, 'slice'), a('mozzarella cheese', 0.5, 'lb', 'sliced'), a('tomato', 1, 'unit', 'sliced'), a('fresh basil', 0.25, 'bunch'), a('olive oil', 1, 'tbsp')],
+    instructions: ['Layer mozzarella, tomato, and basil between bread slices.', 'Brush the outsides with olive oil.', 'Press in a hot skillet until crisp and the cheese melts.'],
+  },
+  {
+    id: 'seed-chicken-noodle-soup', title: 'Classic Chicken Noodle Soup',
+    description: 'A soothing bowl of chicken, noodles, carrots, celery, and onion in savory broth.',
+    category: 'lunch', tags: ['comfort-food', 'high-protein', 'one-pot', 'kid-friendly'], time: [12, 35], servings: 6, difficulty: 'easy', emoji: '🍜',
+    ingredients: [a('chicken breast', 1, 'lb'), a('chicken broth', 6, 'cup'), a('pasta', 8, 'oz'), a('carrot', 3, 'unit'), a('celery', 3, 'unit'), a('yellow onion', 1, 'unit')],
+    instructions: ['Simmer chicken, broth, onion, carrot, and celery until the chicken is cooked through.', 'Remove and shred the chicken, then return it to the pot with pasta.', 'Cook until the noodles are tender and season before serving.'],
+  },
+  {
+    id: 'seed-egg-salad-lettuce-cups', title: 'Egg Salad Lettuce Cups',
+    description: 'Creamy mustard egg salad served in crisp romaine cups for a light, low-carb lunch.',
+    category: 'lunch', tags: ['vegetarian', 'low-carb', 'high-protein', 'quick', 'gluten-free'], time: [10, 10], servings: 3, difficulty: 'easy', emoji: '🥬',
+    ingredients: [a('egg', 6, 'unit'), a('mayonnaise', 3, 'tbsp'), a('dijon mustard', 1, 'tbsp'), a('romaine lettuce', 1, 'unit'), a('green onion', 0.25, 'bunch')],
+    instructions: ['Boil eggs for 10 minutes, cool, peel, and chop.', 'Stir eggs with mayonnaise, mustard, and green onion.', 'Spoon into romaine leaves and serve chilled.'],
+  },
+  {
+    id: 'seed-salmon-rice-bowl', title: 'Salmon Avocado Rice Bowl',
+    description: 'Flaky salmon over rice with cucumber, avocado, soy, and lime for a balanced lunch bowl.',
+    category: 'lunch', tags: ['pescatarian', 'high-protein', 'healthy', 'meal-prep'], time: [10, 25], servings: 3, difficulty: 'easy', emoji: '🍣',
+    ingredients: [a('salmon fillet', 1, 'lb'), a('white rice', 1.5, 'cup'), a('cucumber', 1, 'unit'), a('avocado', 1, 'unit'), a('soy sauce', 3, 'tbsp'), a('lime', 1, 'unit')],
+    instructions: ['Cook the rice and roast the salmon at 400°F until it flakes easily.', 'Flake salmon and divide it over rice with cucumber and avocado.', 'Drizzle with soy sauce and lime.'],
+  },
+  {
+    id: 'seed-hummus-style-veggie-pitas', title: 'Chickpea Tahini Veggie Pitas',
+    description: 'Mashed chickpeas, tahini, cucumber, tomato, and greens make a bright pantry-friendly pita.',
+    category: 'lunch', tags: ['vegan', 'vegetarian', 'dairy-free', 'healthy', 'budget-friendly'], time: [15, 0], servings: 3, difficulty: 'easy', emoji: '🥙',
+    ingredients: [a('canned chickpeas', 1, 'can', 'drained'), a('tahini', 2, 'tbsp'), a('lemon', 0.5, 'unit'), a('cucumber', 0.5, 'unit'), a('tomato', 1, 'unit'), a('pita bread', 3, 'unit')],
+    instructions: ['Mash chickpeas with tahini, lemon, and a splash of water.', 'Warm pitas and fill with the chickpea mixture.', 'Add cucumber and tomato, then season and serve.'],
+  },
+  {
+    id: 'seed-beef-broccoli-lunch-bowls', title: 'Beef & Broccoli Lunch Bowls',
+    description: 'Savory ground beef and broccoli over rice makes a reliable, reheatable meal-prep lunch.',
+    category: 'lunch', tags: ['high-protein', 'meal-prep', 'quick', 'kid-friendly'], time: [10, 20], servings: 4, difficulty: 'easy', emoji: '🥦',
+    ingredients: [a('ground beef', 1, 'lb'), a('broccoli', 2, 'unit', 'cut into florets'), a('white rice', 1.5, 'cup'), a('soy sauce', 3, 'tbsp'), a('garlic', 2, 'clove')],
+    instructions: ['Cook rice according to package directions.', 'Brown beef with garlic, then add broccoli and soy sauce.', 'Cook until broccoli is tender-crisp and portion over rice.'],
+  },
+  {
+    id: 'seed-minestrone', title: 'Pantry Minestrone',
+    description: 'A colorful vegetable soup with beans, pasta, zucchini, and tomatoes that feeds a crowd.',
+    category: 'lunch', tags: ['vegan', 'vegetarian', 'dairy-free', 'high-fiber', 'one-pot', 'budget-friendly'], time: [12, 30], servings: 6, difficulty: 'easy', emoji: '🥕',
+    ingredients: [a('canned black beans', 1, 'can', 'drained'), a('pasta', 6, 'oz'), a('zucchini', 2, 'unit'), a('carrot', 2, 'unit'), a('canned diced tomatoes', 1, 'can'), a('vegetable broth', 5, 'cup')],
+    instructions: ['Sauté carrot and zucchini in olive oil until lightly browned.', 'Add tomatoes, broth, and beans and simmer for 15 minutes.', 'Stir in pasta and cook until tender, seasoning before serving.'],
+  },
+  {
+    id: 'seed-chicken-quinoa-salad', title: 'Lemon Chicken Quinoa Salad',
+    description: 'Protein-rich quinoa and chicken meet spinach, cucumber, and lemon for an easy packed lunch.',
+    category: 'lunch', tags: ['high-protein', 'healthy', 'gluten-free', 'meal-prep'], time: [12, 25], servings: 4, difficulty: 'easy', emoji: '🍋',
+    ingredients: [a('chicken breast', 1, 'lb'), a('quinoa', 1, 'cup'), a('spinach', 0.5, 'bunch'), a('cucumber', 1, 'unit'), a('lemon', 1, 'unit'), a('olive oil', 3, 'tbsp')],
+    instructions: ['Cook quinoa and let it cool while the chicken cooks through in a skillet.', 'Slice the chicken and toss with quinoa, spinach, and cucumber.', 'Dress with lemon and olive oil, then portion for lunch.'],
+  },
+
+  // Dinner
+  {
+    id: 'seed-lemon-herb-chicken-thighs', title: 'Lemon Herb Chicken Thighs',
+    description: 'Juicy roasted chicken thighs with crisp potatoes, lemon, garlic, and rosemary.',
+    category: 'dinner', tags: ['high-protein', 'gluten-free', 'dairy-free', 'paleo', 'one-pot'], time: [10, 40], servings: 4, difficulty: 'easy', emoji: '🍗',
+    ingredients: [a('chicken thigh', 2, 'lb'), a('russet potato', 4, 'unit', 'quartered'), a('lemon', 1, 'unit'), a('garlic', 4, 'clove'), a('dried rosemary', 1, 'tsp'), a('olive oil', 3, 'tbsp')],
+    instructions: ['Heat the oven to 425°F and toss potatoes with oil, garlic, rosemary, and lemon.', 'Nestle chicken thighs among the potatoes and season generously.', 'Roast until chicken reaches 165°F and potatoes are crisp.'],
+  },
+  {
+    id: 'seed-turkey-meatballs', title: 'Tender Turkey Meatballs',
+    description: 'Lean turkey meatballs baked until golden and finished in warm marinara sauce.',
+    category: 'dinner', tags: ['high-protein', 'kid-friendly', 'meal-prep', 'comfort-food'], time: [15, 25], servings: 4, difficulty: 'medium', emoji: '🍝',
+    ingredients: [a('ground turkey', 1, 'lb'), a('breadcrumbs', 0.5, 'cup'), a('egg', 1, 'unit'), a('parmesan cheese', 0.25, 'cup'), a('marinara sauce', 3, 'cup'), a('italian seasoning', 1, 'tsp')],
+    instructions: ['Mix turkey, breadcrumbs, egg, parmesan, and seasoning and shape into meatballs.', 'Bake at 400°F for 18 to 20 minutes until cooked through.', 'Warm the meatballs in marinara and serve over pasta or with bread.'],
+  },
+  {
+    id: 'seed-tofu-broccoli-stir-fry', title: 'Crispy Tofu Broccoli Stir-Fry',
+    description: 'Golden tofu and tender broccoli tossed in a glossy soy-ginger sauce over rice.',
+    category: 'dinner', tags: ['vegan', 'vegetarian', 'dairy-free', 'high-protein', 'quick'], time: [15, 18], servings: 4, difficulty: 'easy', emoji: '🥢',
+    ingredients: [a('tofu', 1, 'lb', 'pressed and cubed'), a('broccoli', 2, 'unit'), a('white rice', 1.5, 'cup'), a('soy sauce', 4, 'tbsp'), a('ginger', 0.5, 'oz'), a('garlic', 3, 'clove'), a('vegetable oil', 2, 'tbsp')],
+    instructions: ['Cook rice and pan-fry tofu in oil until golden on all sides.', 'Add broccoli, garlic, and ginger and stir-fry until crisp-tender.', 'Pour in soy sauce, toss to coat, and serve over rice.'],
+  },
+  {
+    id: 'seed-black-bean-enchiladas', title: 'Black Bean Enchiladas',
+    description: 'Soft tortillas filled with smoky black beans, cheddar, and salsa and baked until bubbling.',
+    category: 'dinner', tags: ['vegetarian', 'high-fiber', 'budget-friendly', 'kid-friendly', 'comfort-food'], time: [15, 30], servings: 6, difficulty: 'easy', emoji: '🌮',
+    ingredients: [a('tortilla', 8, 'unit'), a('canned black beans', 2, 'can', 'drained'), a('salsa', 2, 'cup'), a('cheddar cheese', 1.5, 'cup'), a('canned green chiles', 1, 'can'), a('ground cumin', 1, 'tsp')],
+    instructions: ['Stir beans, green chiles, and cumin together.', 'Roll the filling into tortillas and place seam-side down in a baking dish with salsa.', 'Top with more salsa and cheese and bake at 375°F until bubbling.'],
+  },
+  {
+    id: 'seed-coconut-chickpea-curry', title: 'Coconut Chickpea Curry',
+    description: 'A fragrant one-pot curry with chickpeas, sweet potato, spinach, and creamy coconut milk.',
+    category: 'dinner', tags: ['vegan', 'vegetarian', 'dairy-free', 'gluten-free', 'high-fiber', 'one-pot'], time: [12, 30], servings: 5, difficulty: 'easy', emoji: '🍛',
+    ingredients: [a('canned chickpeas', 2, 'can', 'drained'), a('coconut milk', 2, 'can'), a('sweet potato', 2, 'unit', 'cubed'), a('spinach', 0.5, 'bunch'), a('yellow onion', 1, 'unit'), a('curry powder', 2, 'tsp'), a('ginger', 0.5, 'oz')],
+    instructions: ['Sauté onion, ginger, and curry powder in oil until fragrant.', 'Add sweet potato, chickpeas, and coconut milk and simmer until tender.', 'Fold in spinach until wilted and serve with rice.'],
+  },
+  {
+    id: 'seed-steak-fajita-skillet', title: 'Steak Fajita Skillet',
+    description: 'Sizzling strips of steak with peppers and onion, finished with lime and tucked into tortillas.',
+    category: 'dinner', tags: ['high-protein', 'quick', 'gluten-free', 'kid-friendly'], time: [12, 15], servings: 4, difficulty: 'medium', emoji: '🥩',
+    ingredients: [a('beef steak', 1.25, 'lb', 'sliced thin'), a('red bell pepper', 2, 'unit'), a('yellow onion', 1, 'unit'), a('tortilla', 8, 'unit'), a('lime', 1, 'unit'), a('chili powder', 1, 'tsp'), a('ground cumin', 1, 'tsp')],
+    instructions: ['Season steak with chili powder and cumin and sear in a hot skillet.', 'Set steak aside and cook peppers and onion until charred and tender.', 'Return steak to the pan, squeeze over lime, and serve in warm tortillas.'],
+  },
+  {
+    id: 'seed-baked-cod-tomatoes', title: 'Baked Cod with Tomatoes',
+    description: 'Flaky cod baked with tomatoes, garlic, lemon, and olive oil for a light Mediterranean dinner.',
+    category: 'dinner', tags: ['pescatarian', 'healthy', 'gluten-free', 'dairy-free', 'mediterranean', 'quick'], time: [8, 18], servings: 4, difficulty: 'easy', emoji: '🐟',
+    ingredients: [a('cod fillet', 1.5, 'lb'), a('tomato', 3, 'unit', 'sliced'), a('garlic', 3, 'clove'), a('lemon', 1, 'unit'), a('olive oil', 3, 'tbsp'), a('dried oregano', 1, 'tsp')],
+    instructions: ['Place cod in a baking dish and surround with tomatoes and garlic.', 'Drizzle with oil and lemon and sprinkle with oregano.', 'Bake at 400°F until the fish flakes easily, about 15 to 18 minutes.'],
+  },
+  {
+    id: 'seed-pork-chops-apples', title: 'Pork Chops with Cinnamon Apples',
+    description: 'Pan-seared pork chops paired with sweet-tart apples and onions for a cozy weeknight dinner.',
+    category: 'dinner', tags: ['high-protein', 'gluten-free', 'comfort-food', 'quick'], time: [10, 22], servings: 4, difficulty: 'medium', emoji: '🍏',
+    ingredients: [a('pork chop', 1.5, 'lb'), a('apple', 2, 'unit', 'sliced'), a('yellow onion', 1, 'unit', 'sliced'), a('honey', 2, 'tbsp'), a('ground cinnamon', 0.5, 'tsp'), a('dijon mustard', 1, 'tbsp')],
+    instructions: ['Season and sear pork chops until browned and cooked through; set aside.', 'Cook onion and apples in the same pan until tender.', 'Stir in honey, cinnamon, and mustard and serve the apples over the chops.'],
+  },
+  {
+    id: 'seed-vegetable-lasagna', title: 'Roasted Vegetable Lasagna',
+    description: 'A bubbling layered pasta bake with zucchini, mushrooms, marinara, mozzarella, and parmesan.',
+    category: 'dinner', tags: ['vegetarian', 'comfort-food', 'meal-prep', 'kid-friendly'], time: [25, 45], servings: 8, difficulty: 'medium', emoji: '🍝',
+    ingredients: [a('pasta', 12, 'oz', 'lasagna sheets'), a('zucchini', 2, 'unit'), a('mushroom', 8, 'oz'), a('marinara sauce', 4, 'cup'), a('mozzarella cheese', 2, 'cup'), a('parmesan cheese', 0.5, 'cup')],
+    instructions: ['Roast zucchini and mushrooms until lightly browned.', 'Layer pasta, marinara, vegetables, mozzarella, and parmesan in a baking dish.', 'Cover and bake at 375°F, uncovering near the end until golden and bubbling.'],
+  },
+  {
+    id: 'seed-creamy-mushroom-pasta', title: 'Creamy Mushroom Garlic Pasta',
+    description: 'Silky pasta with browned mushrooms, garlic, parmesan, and a little cream for a restaurant-style dinner.',
+    category: 'dinner', tags: ['vegetarian', 'comfort-food', 'quick', 'budget-friendly'], time: [10, 20], servings: 4, difficulty: 'easy', emoji: '🍄',
+    ingredients: [a('pasta', 12, 'oz'), a('mushroom', 12, 'oz', 'sliced'), a('heavy cream', 1, 'cup'), a('parmesan cheese', 0.5, 'cup'), a('garlic', 3, 'clove'), a('fresh basil', 0.25, 'bunch')],
+    instructions: ['Boil pasta until al dente and reserve a cup of cooking water.', 'Brown mushrooms and garlic, then stir in cream and parmesan.', 'Toss with pasta, loosening with cooking water, and finish with basil.'],
+  },
+  {
+    id: 'seed-one-pot-chicken-rice', title: 'One-Pot Chicken & Rice',
+    description: 'Golden chicken thighs, rice, carrots, peas, and broth cook together in one comforting pot.',
+    category: 'dinner', tags: ['high-protein', 'one-pot', 'comfort-food', 'meal-prep', 'budget-friendly'], time: [12, 40], servings: 5, difficulty: 'medium', emoji: '🍗',
+    ingredients: [a('chicken thigh', 1.5, 'lb'), a('white rice', 1.5, 'cup'), a('carrot', 2, 'unit'), a('frozen peas', 1, 'cup'), a('chicken broth', 3, 'cup'), a('yellow onion', 1, 'unit')],
+    instructions: ['Brown chicken thighs in a Dutch oven and set aside.', 'Sauté onion and carrot, stir in rice, then add broth and peas.', 'Nestle chicken on top, cover, and simmer until rice is tender and chicken is cooked.'],
+  },
+  {
+    id: 'seed-salmon-quinoa-cakes', title: 'Crispy Salmon Quinoa Cakes',
+    description: 'Pan-seared cakes of salmon, quinoa, egg, and breadcrumbs with a crisp golden crust.',
+    category: 'dinner', tags: ['pescatarian', 'high-protein', 'meal-prep', 'healthy'], time: [20, 18], servings: 4, difficulty: 'medium', emoji: '🐠',
+    ingredients: [a('salmon fillet', 1, 'lb'), a('quinoa', 0.75, 'cup'), a('egg', 1, 'unit'), a('breadcrumbs', 0.5, 'cup'), a('green onion', 0.25, 'bunch'), a('lemon', 1, 'unit')],
+    instructions: ['Cook quinoa and flake cooked salmon into a bowl.', 'Mix with egg, breadcrumbs, green onion, and lemon and shape into cakes.', 'Pan-sear in oil until crisp on both sides and cooked through.'],
+  },
+  {
+    id: 'seed-turkey-three-bean-chili', title: 'Turkey Three-Bean Chili',
+    description: 'A hearty pot of ground turkey, beans, tomatoes, corn, and chili spices for a freezer-friendly dinner.',
+    category: 'dinner', tags: ['high-protein', 'high-fiber', 'one-pot', 'meal-prep', 'budget-friendly'], time: [12, 40], servings: 6, difficulty: 'easy', emoji: '🌶️',
+    ingredients: [a('ground turkey', 1, 'lb'), a('canned black beans', 1, 'can'), a('canned chickpeas', 1, 'can'), a('canned diced tomatoes', 2, 'can'), a('frozen corn', 1, 'cup'), a('yellow onion', 1, 'unit'), a('chili powder', 2, 'tsp')],
+    instructions: ['Brown turkey and onion in a large pot.', 'Add beans, tomatoes, corn, and chili powder and bring to a simmer.', 'Cook uncovered until thick and serve with your favorite toppings.'],
+  },
+  {
+    id: 'seed-stuffed-bell-peppers', title: 'Stuffed Bell Peppers',
+    description: 'Roasted peppers filled with seasoned turkey, rice, tomatoes, and cheddar.',
+    category: 'dinner', tags: ['high-protein', 'meal-prep', 'kid-friendly', 'gluten-free'], time: [20, 40], servings: 4, difficulty: 'medium', emoji: '🫑',
+    ingredients: [a('red bell pepper', 4, 'unit'), a('ground turkey', 1, 'lb'), a('white rice', 1, 'cup'), a('canned diced tomatoes', 1, 'can'), a('cheddar cheese', 0.75, 'cup'), a('onion powder', 1, 'tsp')],
+    instructions: ['Cook rice and brown turkey with onion powder.', 'Mix turkey, rice, tomatoes, and half the cheese and fill halved peppers.', 'Cover and bake at 375°F until peppers are tender; top with remaining cheese.'],
+  },
+  {
+    id: 'seed-shrimp-coconut-noodles', title: 'Shrimp Coconut Noodles',
+    description: 'Rice noodles and shrimp in a bright coconut-lime sauce with ginger and green onion.',
+    category: 'dinner', tags: ['pescatarian', 'dairy-free', 'quick', 'high-protein'], time: [12, 18], servings: 4, difficulty: 'medium', emoji: '🍜',
+    ingredients: [a('shrimp', 1, 'lb', 'peeled and deveined'), a('rice noodles', 8, 'oz'), a('coconut milk', 1, 'can'), a('lime', 1, 'unit'), a('ginger', 0.5, 'oz'), a('green onion', 0.25, 'bunch')],
+    instructions: ['Soak rice noodles until tender and drain.', 'Sauté shrimp with ginger until pink, then add coconut milk and lime.', 'Toss in noodles, garnish with green onion, and serve hot.'],
+  },
+  {
+    id: 'seed-cauliflower-chickpea-curry', title: 'Cauliflower Chickpea Curry',
+    description: 'Tender cauliflower and chickpeas simmered with turmeric, coconut milk, and warm spices.',
+    category: 'dinner', tags: ['vegan', 'vegetarian', 'dairy-free', 'gluten-free', 'high-fiber', 'one-pot'], time: [12, 30], servings: 4, difficulty: 'easy', emoji: '🥦',
+    ingredients: [a('cauliflower', 1, 'unit', 'cut into florets'), a('canned chickpeas', 1, 'can'), a('coconut milk', 1, 'can'), a('yellow onion', 1, 'unit'), a('curry powder', 2, 'tsp'), a('turmeric', 0.5, 'tsp'), a('white rice', 1.5, 'cup')],
+    instructions: ['Sauté onion with curry powder and turmeric until fragrant.', 'Add cauliflower, chickpeas, and coconut milk and simmer until tender.', 'Serve over cooked rice with lime if desired.'],
+  },
+  {
+    id: 'seed-eggplant-parmesan', title: 'Crispy Eggplant Parmesan',
+    description: 'Breaded eggplant layered with marinara, mozzarella, and parmesan until bubbling and golden.',
+    category: 'dinner', tags: ['vegetarian', 'comfort-food', 'kid-friendly'], time: [25, 40], servings: 6, difficulty: 'medium', emoji: '🍆',
+    ingredients: [a('eggplant', 2, 'unit'), a('breadcrumbs', 1, 'cup'), a('egg', 2, 'unit'), a('marinara sauce', 3, 'cup'), a('mozzarella cheese', 1.5, 'cup'), a('parmesan cheese', 0.5, 'cup')],
+    instructions: ['Slice eggplant, dip in egg, and coat with breadcrumbs.', 'Bake or pan-cook until golden, then layer with marinara and cheese.', 'Bake at 375°F until the sauce bubbles and cheese browns.'],
+  },
+  {
+    id: 'seed-cheeseburger-sliders', title: 'Cheeseburger Sliders',
+    description: 'Juicy mini beef burgers with cheddar and tomato on soft buns for a fun family dinner.',
+    category: 'dinner', tags: ['high-protein', 'kid-friendly', 'comfort-food', 'budget-friendly'], time: [10, 15], servings: 4, difficulty: 'easy', emoji: '🍔',
+    ingredients: [a('ground beef', 1, 'lb'), a('burger bun', 8, 'unit'), a('cheddar cheese', 8, 'slice'), a('tomato', 1, 'unit'), a('romaine lettuce', 0.5, 'unit'), a('dijon mustard', 2, 'tbsp')],
+    instructions: ['Shape beef into eight small patties and season.', 'Sear patties until cooked through, adding cheddar during the final minute.', 'Build sliders with buns, tomato, lettuce, and mustard.'],
+  },
+  {
+    id: 'seed-sheet-pan-sausage-vegetables', title: 'Sheet-Pan Sausage & Vegetables',
+    description: 'A colorful tray of turkey sausage, potatoes, green beans, and peppers with almost no cleanup.',
+    category: 'dinner', tags: ['one-pot', 'meal-prep', 'gluten-free', 'dairy-free', 'quick'], time: [12, 30], servings: 4, difficulty: 'easy', emoji: '🥔',
+    ingredients: [a('turkey sausage', 1, 'lb'), a('russet potato', 3, 'unit', 'cubed'), a('green beans', 0.75, 'lb'), a('red bell pepper', 1, 'unit'), a('olive oil', 3, 'tbsp'), a('smoked paprika', 1, 'tsp')],
+    instructions: ['Toss potatoes with oil and paprika and roast at 425°F for 15 minutes.', 'Add sliced sausage, green beans, and pepper to the pan.', 'Roast until vegetables are tender and sausage is browned.'],
+  },
+  {
+    id: 'seed-chicken-parmesan', title: 'Weeknight Chicken Parmesan',
+    description: 'Crisp chicken cutlets baked with marinara, mozzarella, and parmesan for an Italian-American classic.',
+    category: 'dinner', tags: ['high-protein', 'comfort-food', 'kid-friendly', 'meal-prep'], time: [18, 28], servings: 4, difficulty: 'medium', emoji: '🍅',
+    ingredients: [a('chicken breast', 1.25, 'lb'), a('breadcrumbs', 0.75, 'cup'), a('egg', 1, 'unit'), a('marinara sauce', 2, 'cup'), a('mozzarella cheese', 1, 'cup'), a('parmesan cheese', 0.25, 'cup')],
+    instructions: ['Dip chicken in egg and breadcrumbs and bake until nearly cooked through.', 'Top with marinara, mozzarella, and parmesan.', 'Return to the oven until chicken is cooked and cheese is golden.'],
+  },
+  {
+    id: 'seed-beef-potato-stew', title: 'Cozy Beef Potato Stew',
+    description: 'Tender beef, potatoes, carrots, and onion simmer slowly in a rich savory broth.',
+    category: 'dinner', tags: ['comfort-food', 'one-pot', 'high-protein', 'budget-friendly'], time: [20, 90], servings: 6, difficulty: 'medium', emoji: '🥘',
+    ingredients: [a('beef steak', 1.5, 'lb', 'cut into cubes'), a('russet potato', 4, 'unit'), a('carrot', 3, 'unit'), a('yellow onion', 1, 'unit'), a('chicken broth', 5, 'cup'), a('tomato paste', 2, 'tbsp'), a('dried thyme', 1, 'tsp')],
+    instructions: ['Brown beef in batches in a heavy pot.', 'Add onion, tomato paste, broth, potatoes, carrots, and thyme.', 'Cover and simmer until the beef and vegetables are fork-tender.'],
+  },
+  {
+    id: 'seed-vegetable-fried-rice', title: 'Vegetable Fried Rice',
+    description: 'A quick skillet of rice, egg, peas, corn, carrots, and soy sauce that is perfect for leftovers.',
+    category: 'dinner', tags: ['vegetarian', 'quick', 'budget-friendly', 'kid-friendly'], time: [10, 15], servings: 4, difficulty: 'easy', emoji: '🍚',
+    ingredients: [a('white rice', 3, 'cup', 'cooked and chilled'), a('egg', 3, 'unit'), a('frozen peas', 1, 'cup'), a('frozen corn', 1, 'cup'), a('carrot', 1, 'unit', 'diced'), a('soy sauce', 3, 'tbsp')],
+    instructions: ['Scramble eggs in a hot oiled skillet and set aside.', 'Stir-fry carrot, peas, and corn until hot, then add chilled rice.', 'Return egg, add soy sauce, and toss until steaming.'],
+  },
+  {
+    id: 'seed-lemon-garlic-shrimp-bowls', title: 'Lemon Garlic Shrimp Bowls',
+    description: 'Garlicky shrimp served over rice with cucumber, avocado, and lemon for a quick balanced dinner.',
+    category: 'dinner', tags: ['pescatarian', 'high-protein', 'healthy', 'gluten-free', 'quick'], time: [10, 15], servings: 4, difficulty: 'easy', emoji: '🍤',
+    ingredients: [a('shrimp', 1.25, 'lb'), a('white rice', 1.5, 'cup'), a('cucumber', 1, 'unit'), a('avocado', 1, 'unit'), a('garlic', 3, 'clove'), a('lemon', 1, 'unit')],
+    instructions: ['Cook rice and sauté shrimp with garlic until pink.', 'Divide rice into bowls and add cucumber and avocado.', 'Top with shrimp and squeeze lemon over everything.'],
+  },
+  {
+    id: 'seed-baked-mac-and-cheese', title: 'Baked Mac & Cheese',
+    description: 'Creamy cheddar pasta with a crisp breadcrumb top for the ultimate cozy side or main.',
+    category: 'dinner', tags: ['vegetarian', 'comfort-food', 'kid-friendly', 'budget-friendly'], time: [15, 35], servings: 6, difficulty: 'medium', emoji: '🧀',
+    ingredients: [a('pasta', 16, 'oz'), a('cheddar cheese', 2, 'cup'), a('milk', 2, 'cup'), a('unsalted butter', 3, 'tbsp'), a('all-purpose flour', 3, 'tbsp'), a('panko breadcrumbs', 0.5, 'cup')],
+    instructions: ['Boil pasta until just tender and heat the oven to 375°F.', 'Make a roux with butter and flour, whisk in milk, and melt in cheddar.', 'Stir in pasta, top with panko, and bake until bubbling and golden.'],
+  },
+  {
+    id: 'seed-keto-chicken-asparagus', title: 'Keto Chicken & Asparagus',
+    description: 'Pan-seared chicken with asparagus in a lemon-garlic butter sauce for a low-carb dinner.',
+    category: 'dinner', tags: ['keto', 'low-carb', 'high-protein', 'gluten-free', 'quick'], time: [10, 20], servings: 4, difficulty: 'easy', emoji: '🥦',
+    ingredients: [a('chicken breast', 1.25, 'lb'), a('asparagus', 1, 'bunch'), a('unsalted butter', 3, 'tbsp'), a('lemon', 1, 'unit'), a('garlic', 3, 'clove'), a('parmesan cheese', 0.25, 'cup')],
+    instructions: ['Sear seasoned chicken in a skillet until browned and cooked through.', 'Add asparagus and cook until bright green and tender-crisp.', 'Swirl in butter, garlic, lemon, and parmesan and spoon over the chicken.'],
+  },
+  {
+    id: 'seed-mediterranean-cod-quinoa', title: 'Mediterranean Cod & Quinoa',
+    description: 'Tender cod with lemon, tomato, cucumber, and fluffy quinoa for a sunny weeknight plate.',
+    category: 'dinner', tags: ['pescatarian', 'mediterranean', 'healthy', 'quick'], time: [12, 20], servings: 4, difficulty: 'easy', emoji: '🌊',
+    ingredients: [a('cod fillet', 1.25, 'lb'), a('quinoa', 1, 'cup', 'cooked'), a('tomato', 2, 'unit'), a('cucumber', 1, 'unit'), a('lemon', 1, 'unit'), a('feta cheese', 0.5, 'cup')],
+    instructions: ['Bake cod with olive oil, lemon, and pepper until it flakes.', 'Toss cooked quinoa with tomato, cucumber, feta, and lemon.', 'Serve the cod over the salad while warm.'],
+  },
+  {
+    id: 'seed-kale-sausage-white-bean-skillet', title: 'Kale Sausage Bean Skillet',
+    description: 'A hearty skillet of turkey sausage, kale, beans, and tomatoes that comes together fast.',
+    category: 'dinner', tags: ['high-protein', 'high-fiber', 'one-pot', 'quick', 'meal-prep'], time: [10, 25], servings: 4, difficulty: 'easy', emoji: '🥬',
+    ingredients: [a('turkey sausage', 1, 'lb'), a('kale', 1, 'bunch'), a('canned black beans', 1, 'can'), a('canned diced tomatoes', 1, 'can'), a('garlic', 3, 'clove'), a('chicken broth', 1, 'cup')],
+    instructions: ['Brown sliced sausage in a large skillet.', 'Add garlic, tomatoes, beans, broth, and chopped kale.', 'Cover and simmer until the kale is tender and the sauce thickens.'],
+  },
+  {
+    id: 'seed-paleo-stuffed-sweet-potatoes', title: 'Paleo Pulled Chicken Sweet Potatoes',
+    description: 'Roasted sweet potatoes filled with tangy shredded chicken, avocado, and fresh tomato.',
+    category: 'dinner', tags: ['paleo', 'high-protein', 'gluten-free', 'dairy-free', 'meal-prep'], time: [12, 45], servings: 4, difficulty: 'easy', emoji: '🍠',
+    ingredients: [a('sweet potato', 4, 'unit'), a('chicken breast', 1, 'lb'), a('tomato', 1, 'unit'), a('avocado', 1, 'unit'), a('lime', 1, 'unit'), a('hot sauce', 2, 'tbsp')],
+    instructions: ['Roast sweet potatoes at 425°F until tender and cook the chicken until it shreds easily.', 'Shred chicken and toss with hot sauce and lime.', 'Split potatoes and fill with chicken, tomato, and avocado.'],
+  },
+  {
+    id: 'seed-vegan-tofu-rice-noodles', title: 'Vegan Tofu Rice Noodles',
+    description: 'Chewy rice noodles, tofu, cabbage, and carrots tossed in a quick ginger-soy dressing.',
+    category: 'dinner', tags: ['vegan', 'vegetarian', 'dairy-free', 'quick', 'budget-friendly'], time: [15, 15], servings: 4, difficulty: 'easy', emoji: '🥢',
+    ingredients: [a('tofu', 1, 'lb'), a('rice noodles', 8, 'oz'), a('cabbage', 0.5, 'unit', 'shredded'), a('carrot', 2, 'unit'), a('soy sauce', 4, 'tbsp'), a('ginger', 0.5, 'oz')],
+    instructions: ['Soak noodles until tender and drain.', 'Pan-sear tofu until golden, then stir-fry cabbage and carrot.', 'Add noodles, soy sauce, and ginger and toss until hot.'],
+  },
+  {
+    id: 'seed-pesto-chicken-pasta', title: 'Basil Chicken Pasta',
+    description: 'Juicy chicken, pasta, tomato, and basil come together in a bright parmesan-tossed skillet.',
+    category: 'dinner', tags: ['high-protein', 'quick', 'kid-friendly', 'meal-prep'], time: [12, 20], servings: 4, difficulty: 'easy', emoji: '🍝',
+    ingredients: [a('chicken breast', 1, 'lb'), a('pasta', 12, 'oz'), a('tomato', 2, 'unit'), a('fresh basil', 0.5, 'bunch'), a('parmesan cheese', 0.5, 'cup'), a('olive oil', 3, 'tbsp')],
+    instructions: ['Boil pasta and sear seasoned chicken until cooked through.', 'Slice chicken and toss with pasta, tomato, basil, olive oil, and parmesan.', 'Season with pepper and serve warm or chilled.'],
+  },
+  {
+    id: 'seed-air-fryer-chicken-thighs', title: 'Air-Fryer Chicken Thighs',
+    description: 'Crisp, juicy boneless chicken thighs seasoned with smoked paprika and garlic and ready in under 30 minutes.',
+    category: 'dinner', tags: ['high-protein', 'low-carb', 'keto', 'air-fryer', 'quick'], time: [8, 25], servings: 4, difficulty: 'easy', emoji: '🍗',
+    ingredients: [a('chicken thigh', 2, 'lb', 'boneless, cut into bites'), a('olive oil', 1, 'tbsp'), a('smoked paprika', 1, 'tsp'), a('garlic powder', 1, 'tsp'), a('hot sauce', 3, 'tbsp')],
+    instructions: ['Toss chicken with oil, paprika, and garlic powder.', 'Air-fry at 400°F until browned and cooked through, shaking halfway.', 'Toss with hot sauce and serve immediately.'],
+  },
+
+  // Dessert
+  {
+    id: 'seed-blueberry-oat-crumble', title: 'Blueberry Oat Crumble',
+    description: 'Juicy berries baked beneath a buttery oat topping for an easy spoonable dessert.',
+    category: 'dessert', tags: ['vegetarian', 'comfort-food', 'budget-friendly'], time: [10, 35], servings: 6, difficulty: 'easy', emoji: '🫐',
+    ingredients: [a('frozen mixed berries', 4, 'cup'), a('rolled oats', 1, 'cup'), a('all-purpose flour', 0.5, 'cup'), a('brown sugar', 0.75, 'cup'), a('unsalted butter', 0.5, 'cup')],
+    instructions: ['Heat the oven to 375°F and spread berries in a baking dish.', 'Rub oats, flour, sugar, and butter together until crumbly.', 'Scatter over berries and bake until golden and bubbling.'],
+  },
+  {
+    id: 'seed-fudgy-brownies', title: 'Fudgy Chocolate Brownies',
+    description: 'Rich, chewy brownies with cocoa and chocolate chips and a crackly top.',
+    category: 'dessert', tags: ['vegetarian', 'comfort-food', 'kid-friendly'], time: [12, 28], servings: 16, difficulty: 'easy', emoji: '🍫',
+    ingredients: [a('all-purpose flour', 1, 'cup'), a('cocoa powder', 0.5, 'cup'), a('unsalted butter', 0.75, 'cup'), a('granulated sugar', 1.5, 'cup'), a('egg', 3, 'unit'), a('chocolate chips', 1, 'cup')],
+    instructions: ['Melt butter and whisk in sugar, eggs, and cocoa.', 'Fold in flour and chocolate chips without overmixing.', 'Bake at 350°F until the center is just set, then cool before cutting.'],
+  },
+  {
+    id: 'seed-frozen-yogurt-bark', title: 'Berry Yogurt Bark',
+    description: 'A cool, tangy sheet of yogurt topped with berries, honey, and chocolate for a freezer treat.',
+    category: 'dessert', tags: ['vegetarian', 'healthy', 'gluten-free', 'quick'], time: [10, 0], servings: 8, difficulty: 'easy', emoji: '🍓',
+    ingredients: [a('plain greek yogurt', 2, 'cup'), a('frozen mixed berries', 1, 'cup'), a('honey', 2, 'tbsp'), a('chocolate chips', 0.25, 'cup')],
+    instructions: ['Spread yogurt into a thin layer on a lined baking sheet.', 'Top with berries, honey, and chocolate chips.', 'Freeze until firm, break into pieces, and store frozen.'],
+  },
+  {
+    id: 'seed-peanut-butter-cookies', title: 'Three-Ingredient Peanut Butter Cookies',
+    description: 'Soft, chewy peanut butter cookies made with pantry staples in one bowl.',
+    category: 'dessert', tags: ['vegetarian', 'gluten-free', 'quick', 'budget-friendly'], time: [10, 12], servings: 18, difficulty: 'easy', emoji: '🥜',
+    ingredients: [a('peanut butter', 1, 'cup'), a('granulated sugar', 0.75, 'cup'), a('egg', 1, 'unit'), a('vanilla extract', 1, 'tsp')],
+    instructions: ['Stir peanut butter, sugar, egg, and vanilla into a soft dough.', 'Scoop onto a lined tray and press with a fork.', 'Bake at 350°F for 10 to 12 minutes and cool on the tray.'],
+  },
+  {
+    id: 'seed-carrot-cake-cupcakes', title: 'Carrot Cake Cupcakes',
+    description: 'Moist cinnamon-spiced carrot cupcakes with a smooth cream cheese frosting.',
+    category: 'dessert', tags: ['vegetarian', 'kid-friendly', 'comfort-food'], time: [20, 22], servings: 12, difficulty: 'medium', emoji: '🧁',
+    ingredients: [a('carrot', 3, 'unit', 'finely grated'), a('all-purpose flour', 1.5, 'cup'), a('brown sugar', 0.75, 'cup'), a('egg', 2, 'unit'), a('ground cinnamon', 1.5, 'tsp'), a('cream cheese', 8, 'oz')],
+    instructions: ['Whisk flour, sugar, eggs, cinnamon, and grated carrot into a batter.', 'Divide into a lined muffin pan and bake at 350°F until springy.', 'Cool completely and frost with softened cream cheese.'],
+  },
+  {
+    id: 'seed-lemon-bars', title: 'Bright Lemon Bars',
+    description: 'Buttery shortbread topped with a tart, silky lemon custard and powdered-sugar-style finish.',
+    category: 'dessert', tags: ['vegetarian', 'comfort-food'], time: [20, 35], servings: 16, difficulty: 'medium', emoji: '🍋',
+    ingredients: [a('all-purpose flour', 1.5, 'cup'), a('unsalted butter', 0.75, 'cup'), a('granulated sugar', 1.5, 'cup'), a('egg', 4, 'unit'), a('lemon', 4, 'unit')],
+    instructions: ['Press flour, butter, and part of the sugar into a lined pan and bake until pale gold.', 'Whisk eggs, remaining sugar, and lemon juice and pour over the crust.', 'Bake until just set, cool completely, and slice.'],
+  },
+  {
+    id: 'seed-chocolate-mug-cake', title: 'Five-Minute Chocolate Mug Cake',
+    description: 'A warm single-serving chocolate cake made in the microwave when a craving hits.',
+    category: 'dessert', tags: ['vegetarian', 'quick', 'kid-friendly'], time: [4, 2], servings: 1, difficulty: 'easy', emoji: '🍰',
+    ingredients: [a('all-purpose flour', 4, 'tbsp'), a('cocoa powder', 2, 'tbsp'), a('granulated sugar', 2, 'tbsp'), a('milk', 3, 'tbsp'), a('unsalted butter', 1, 'tbsp'), a('chocolate chips', 1, 'tbsp')],
+    instructions: ['Whisk flour, cocoa, sugar, milk, and melted butter in a large mug.', 'Fold in chocolate chips.', 'Microwave until the center is just set, about 90 seconds, and rest before eating.'],
+  },
+  {
+    id: 'seed-banana-nice-cream', title: 'Banana Nice Cream',
+    description: 'A creamy, dairy-free frozen dessert made from ripe bananas and chocolate chips.',
+    category: 'dessert', tags: ['vegan', 'vegetarian', 'dairy-free', 'gluten-free', 'healthy', 'quick'], time: [10, 0], servings: 4, difficulty: 'easy', emoji: '🍨',
+    ingredients: [a('banana', 4, 'unit', 'sliced and frozen'), a('almond milk', 0.25, 'cup'), a('vanilla extract', 1, 'tsp'), a('chocolate chips', 0.25, 'cup')],
+    instructions: ['Blend frozen bananas with almond milk and vanilla until smooth.', 'Fold in chocolate chips.', 'Serve immediately as soft-serve or freeze for 30 minutes to firm.'],
+  },
+  {
+    id: 'seed-creamy-rice-pudding', title: 'Creamy Cinnamon Rice Pudding',
+    description: 'A comforting stovetop pudding made with rice, milk, vanilla, and cinnamon.',
+    category: 'dessert', tags: ['vegetarian', 'comfort-food', 'budget-friendly'], time: [5, 35], servings: 6, difficulty: 'easy', emoji: '🍚',
+    ingredients: [a('white rice', 1, 'cup'), a('milk', 4, 'cup'), a('granulated sugar', 0.5, 'cup'), a('ground cinnamon', 1, 'tsp'), a('vanilla extract', 1, 'tsp'), a('raisins', 0.5, 'cup')],
+    instructions: ['Combine rice, milk, sugar, and cinnamon in a saucepan.', 'Simmer gently, stirring often, until rice is tender and pudding is thick.', 'Stir in vanilla and raisins and serve warm or chilled.'],
+  },
+  {
+    id: 'seed-peach-cobbler', title: 'Skillet Peach Cobbler',
+    description: 'Juicy peaches baked under a golden cinnamon biscuit topping in one skillet.',
+    category: 'dessert', tags: ['vegetarian', 'comfort-food', 'kid-friendly'], time: [15, 35], servings: 6, difficulty: 'medium', emoji: '🍑',
+    ingredients: [a('peach', 5, 'unit', 'sliced'), a('all-purpose flour', 1, 'cup'), a('granulated sugar', 0.75, 'cup'), a('unsalted butter', 0.5, 'cup'), a('milk', 0.5, 'cup'), a('ground cinnamon', 1, 'tsp')],
+    instructions: ['Arrange peaches in a buttered oven-safe skillet and sprinkle with sugar.', 'Stir flour, milk, melted butter, and cinnamon into a thick batter.', 'Dollop over peaches and bake at 375°F until golden and bubbling.'],
+  },
+  {
+    id: 'seed-pumpkin-muffins', title: 'Pumpkin Spice Muffins',
+    description: 'Tender pumpkin muffins with warm cinnamon and a bakery-style domed top.',
+    category: 'dessert', tags: ['vegetarian', 'kid-friendly', 'meal-prep'], time: [12, 22], servings: 12, difficulty: 'easy', emoji: '🎃',
+    ingredients: [a('pumpkin puree', 1, 'can'), a('all-purpose flour', 1.75, 'cup'), a('brown sugar', 0.75, 'cup'), a('egg', 2, 'unit'), a('ground cinnamon', 2, 'tsp'), a('baking soda', 1, 'tsp')],
+    instructions: ['Whisk pumpkin, sugar, eggs, and cinnamon together.', 'Fold in flour and baking soda just until combined.', 'Divide into muffin cups and bake at 350°F until a tester comes out clean.'],
+  },
+  {
+    id: 'seed-coconut-macaroons', title: 'Coconut Macaroons',
+    description: 'Chewy toasted coconut cookies with crisp edges and a simple four-ingredient batter.',
+    category: 'dessert', tags: ['vegetarian', 'gluten-free', 'quick'], time: [10, 18], servings: 16, difficulty: 'easy', emoji: '🥥',
+    ingredients: [a('shredded coconut', 3, 'cup'), a('egg', 2, 'unit'), a('granulated sugar', 0.5, 'cup'), a('vanilla extract', 1, 'tsp'), a('dark chocolate', 2, 'oz', 'melted for dipping')],
+    instructions: ['Stir coconut, eggs, sugar, and vanilla together.', 'Scoop into compact mounds on a lined baking sheet.', 'Bake at 350°F until golden, cool, and dip the bottoms in melted chocolate.'],
+  },
+  {
+    id: 'seed-chocolate-avocado-mousse', title: 'Chocolate Avocado Mousse',
+    description: 'A silky dairy-free chocolate mousse made creamy with ripe avocado and coconut milk.',
+    category: 'dessert', tags: ['vegan', 'vegetarian', 'dairy-free', 'gluten-free', 'healthy'], time: [10, 0], servings: 4, difficulty: 'easy', emoji: '🥑',
+    ingredients: [a('avocado', 2, 'unit'), a('cocoa powder', 0.5, 'cup'), a('maple syrup', 0.25, 'cup'), a('coconut milk', 0.5, 'cup'), a('vanilla extract', 1, 'tsp')],
+    instructions: ['Blend avocado, cocoa, maple syrup, coconut milk, and vanilla until completely smooth.', 'Taste and adjust sweetness if needed.', 'Chill for at least 30 minutes and serve cold.'],
+  },
+  {
+    id: 'seed-berry-cheesecake-cups', title: 'Berry Cheesecake Cups',
+    description: 'No-bake cheesecake cups layered with graham crumbs, creamy filling, and berries.',
+    category: 'dessert', tags: ['vegetarian', 'quick', 'kid-friendly'], time: [20, 0], servings: 6, difficulty: 'easy', emoji: '🍓',
+    ingredients: [a('cream cheese', 8, 'oz'), a('plain greek yogurt', 0.5, 'cup'), a('granulated sugar', 0.5, 'cup'), a('graham cracker', 1, 'cup', 'crushed'), a('frozen mixed berries', 1.5, 'cup')],
+    instructions: ['Beat cream cheese, yogurt, and sugar until smooth.', 'Layer graham crumbs, cheesecake filling, and berries in small cups.', 'Chill until set and serve.'],
+  },
+
+  // Snacks
+  {
+    id: 'seed-fresh-guacamole', title: 'Fresh Guacamole',
+    description: 'Chunky avocado dip with tomato, onion, cilantro, and lime for chips, tacos, or toast.',
+    category: 'snack', tags: ['vegan', 'vegetarian', 'dairy-free', 'gluten-free', 'healthy', 'quick'], time: [10, 0], servings: 6, difficulty: 'easy', emoji: '🥑',
+    ingredients: [a('avocado', 3, 'unit'), a('tomato', 1, 'unit', 'diced'), a('red onion', 0.25, 'unit', 'finely diced'), a('cilantro', 0.25, 'bunch'), a('lime', 2, 'unit'), a('jalapeno', 1, 'unit')],
+    instructions: ['Mash avocados in a bowl, leaving some chunks.', 'Fold in tomato, onion, cilantro, jalapeno, and lime juice.', 'Season to taste and serve immediately.'],
+  },
+  {
+    id: 'seed-fresh-salsa', title: 'Fresh Salsa Fresca',
+    description: 'A juicy tomato salsa with lime, cilantro, red onion, and jalapeno.',
+    category: 'snack', tags: ['vegan', 'vegetarian', 'dairy-free', 'gluten-free', 'healthy', 'quick'], time: [12, 0], servings: 6, difficulty: 'easy', emoji: '🍅',
+    ingredients: [a('tomato', 4, 'unit', 'diced'), a('red onion', 0.5, 'unit', 'diced'), a('cilantro', 0.25, 'bunch'), a('jalapeno', 1, 'unit'), a('lime', 1, 'unit')],
+    instructions: ['Combine tomatoes, onion, cilantro, and jalapeno.', 'Squeeze over lime and season with salt.', 'Rest for 10 minutes so the flavors mingle, then serve.'],
+  },
+  {
+    id: 'seed-roasted-chickpeas', title: 'Smoky Roasted Chickpeas',
+    description: 'Crisp, crunchy chickpeas seasoned with smoked paprika and cumin for a high-fiber snack.',
+    category: 'snack', tags: ['vegan', 'vegetarian', 'dairy-free', 'gluten-free', 'healthy', 'high-fiber'], time: [5, 35], servings: 4, difficulty: 'easy', emoji: '🫘',
+    ingredients: [a('canned chickpeas', 2, 'can', 'drained and dried'), a('olive oil', 2, 'tbsp'), a('smoked paprika', 1, 'tsp'), a('ground cumin', 1, 'tsp'), a('garlic powder', 0.5, 'tsp')],
+    instructions: ['Pat chickpeas very dry and toss with oil and spices.', 'Roast at 425°F, shaking once, until crisp.', 'Cool for 5 minutes before snacking.'],
+  },
+  {
+    id: 'seed-cucumber-yogurt-dip', title: 'Cucumber Yogurt Dip',
+    description: 'Cool Greek yogurt mixed with cucumber, garlic, lemon, and herbs for dipping or spreading.',
+    category: 'snack', tags: ['vegetarian', 'gluten-free', 'healthy', 'quick', 'high-protein'], time: [10, 0], servings: 6, difficulty: 'easy', emoji: '🥒',
+    ingredients: [a('plain greek yogurt', 1.5, 'cup'), a('cucumber', 1, 'unit', 'grated and squeezed dry'), a('garlic', 1, 'clove'), a('lemon', 0.5, 'unit'), a('olive oil', 1, 'tbsp')],
+    instructions: ['Stir yogurt, cucumber, garlic, lemon, and olive oil together.', 'Season with salt and pepper.', 'Chill for 20 minutes and serve with vegetables or pita.'],
+  },
+  {
+    id: 'seed-cheese-quesadilla-wedges', title: 'Cheesy Quesadilla Wedges',
+    description: 'Crisp tortilla wedges with gooey cheddar, ready for dipping in salsa.',
+    category: 'snack', tags: ['vegetarian', 'quick', 'kid-friendly', 'budget-friendly'], time: [5, 8], servings: 4, difficulty: 'easy', emoji: '🧀',
+    ingredients: [a('tortilla', 4, 'unit'), a('cheddar cheese', 1.5, 'cup', 'shredded'), a('salsa', 0.5, 'cup'), a('sour cream', 0.5, 'cup')],
+    instructions: ['Sprinkle cheese over half of each tortilla and fold closed.', 'Cook in a dry skillet until golden on both sides and melted inside.', 'Cut into wedges and serve with salsa and sour cream.'],
+  },
+  {
+    id: 'seed-apple-peanut-butter-nachos', title: 'Apple Peanut Butter Nachos',
+    description: 'Crisp apple slices drizzled with peanut butter, honey, and chocolate chips.',
+    category: 'snack', tags: ['vegetarian', 'quick', 'kid-friendly', 'gluten-free'], time: [8, 0], servings: 4, difficulty: 'easy', emoji: '🍏',
+    ingredients: [a('apple', 3, 'unit', 'thinly sliced'), a('peanut butter', 4, 'tbsp'), a('honey', 2, 'tbsp'), a('chocolate chips', 0.25, 'cup')],
+    instructions: ['Arrange apple slices on a platter.', 'Warm peanut butter briefly until pourable and drizzle over the apples.', 'Finish with honey and chocolate chips.'],
+  },
+  {
+    id: 'seed-zucchini-fritters', title: 'Crispy Zucchini Fritters',
+    description: 'Golden skillet fritters made with shredded zucchini, egg, parmesan, and breadcrumbs.',
+    category: 'snack', tags: ['vegetarian', 'quick', 'kid-friendly'], time: [15, 15], servings: 4, difficulty: 'medium', emoji: '🥒',
+    ingredients: [a('zucchini', 3, 'unit', 'shredded and squeezed dry'), a('egg', 2, 'unit'), a('breadcrumbs', 0.75, 'cup'), a('parmesan cheese', 0.5, 'cup'), a('garlic powder', 0.5, 'tsp')],
+    instructions: ['Mix zucchini, eggs, breadcrumbs, parmesan, and garlic powder.', 'Drop spoonfuls into an oiled skillet and flatten.', 'Cook until crisp and golden on both sides, then serve warm.'],
+  },
+  {
+    id: 'seed-air-fryer-chicken-bites', title: 'Air-Fryer Chicken Bites',
+    description: 'Crisp bite-sized chicken coated in panko and paprika for an easy protein-packed snack.',
+    category: 'snack', tags: ['high-protein', 'air-fryer', 'quick', 'kid-friendly'], time: [12, 15], servings: 4, difficulty: 'easy', emoji: '🍗',
+    ingredients: [a('chicken breast', 1, 'lb', 'cut into bites'), a('egg', 1, 'unit'), a('panko breadcrumbs', 1, 'cup'), a('paprika', 1, 'tsp'), a('garlic powder', 1, 'tsp')],
+    instructions: ['Dip chicken pieces in beaten egg, then coat with seasoned panko.', 'Air-fry at 400°F until crisp and cooked through, turning halfway.', 'Serve with yogurt dip or salsa.'],
+  },
+  {
+    id: 'seed-banana-oat-cookies', title: 'Banana Oat Snack Cookies',
+    description: 'Soft two-bite cookies made from banana, oats, and chocolate chips with no mixer needed.',
+    category: 'snack', tags: ['vegetarian', 'healthy', 'high-fiber', 'quick', 'kid-friendly'], time: [8, 15], servings: 12, difficulty: 'easy', emoji: '🍪',
+    ingredients: [a('banana', 2, 'unit', 'mashed'), a('rolled oats', 1.5, 'cup'), a('peanut butter', 3, 'tbsp'), a('chocolate chips', 0.25, 'cup'), a('ground cinnamon', 0.5, 'tsp')],
+    instructions: ['Stir mashed banana, oats, peanut butter, cinnamon, and chocolate chips together.', 'Scoop onto a lined baking sheet and flatten slightly.', 'Bake at 350°F for 12 to 15 minutes until set.'],
+  },
+  {
+    id: 'seed-tuna-avocado-bites', title: 'Tuna Avocado Cucumber Bites',
+    description: 'Fresh cucumber rounds topped with lemony tuna and avocado for a light, crunchy snack.',
+    category: 'snack', tags: ['pescatarian', 'high-protein', 'low-carb', 'gluten-free', 'quick'], time: [12, 0], servings: 4, difficulty: 'easy', emoji: '🥒',
+    ingredients: [a('canned tuna', 1, 'can'), a('avocado', 1, 'unit'), a('cucumber', 1, 'unit'), a('lemon', 0.5, 'unit'), a('mayonnaise', 1, 'tbsp')],
+    instructions: ['Mash avocado with tuna, lemon, and mayonnaise.', 'Slice cucumber into thick rounds.', 'Top each round with tuna mixture and serve chilled.'],
+  },
+  {
+    id: 'seed-air-fryer-potato-wedges', title: 'Air-Fryer Potato Wedges',
+    description: 'Crisp-edged potato wedges with smoked paprika and garlic, ready for dipping.',
+    category: 'snack', tags: ['vegan', 'vegetarian', 'dairy-free', 'air-fryer', 'budget-friendly'], time: [8, 22], servings: 4, difficulty: 'easy', emoji: '🍟',
+    ingredients: [a('russet potato', 4, 'unit'), a('olive oil', 2, 'tbsp'), a('smoked paprika', 1, 'tsp'), a('garlic powder', 1, 'tsp'), a('salt', 0, 'to-taste')],
+    instructions: ['Cut potatoes into wedges and toss with oil and spices.', 'Air-fry at 400°F until crisp and tender, shaking twice.', 'Season while hot and serve.'],
+  },
+  {
+    id: 'seed-frozen-berry-yogurt-cups', title: 'Frozen Berry Yogurt Cups',
+    description: 'Individual frozen yogurt cups with a crunchy graham base and berry swirl.',
+    category: 'snack', tags: ['vegetarian', 'healthy', 'quick', 'kid-friendly'], time: [12, 0], servings: 8, difficulty: 'easy', emoji: '🍧',
+    ingredients: [a('plain greek yogurt', 2, 'cup'), a('frozen mixed berries', 1, 'cup'), a('honey', 2, 'tbsp'), a('graham cracker', 0.75, 'cup', 'crushed')],
+    instructions: ['Line a muffin pan and divide graham crumbs among the cups.', 'Mix yogurt with honey and spoon over the crumbs; swirl in berries.', 'Freeze until firm, then let stand for 5 minutes before serving.'],
+  },
+  {
+    id: 'seed-chocolate-almond-clusters', title: 'Chocolate Almond Clusters',
+    description: 'Crunchy almonds coated in dark chocolate for an easy make-ahead treat.',
+    category: 'snack', tags: ['vegan', 'vegetarian', 'gluten-free', 'quick'], time: [10, 0], servings: 12, difficulty: 'easy', emoji: '🍫',
+    ingredients: [a('almonds', 2, 'cup'), a('dark chocolate', 8, 'oz'), a('dried cranberries', 0.5, 'cup'), a('salt', 0, 'to-taste')],
+    instructions: ['Melt dark chocolate gently until smooth.', 'Stir in almonds and cranberries and spoon clusters onto parchment.', 'Sprinkle with salt and chill until firm.'],
+  },
+];
+
+export const EXPANDED_RECIPES: Recipe[] = CATALOG.map(makeRecipe);

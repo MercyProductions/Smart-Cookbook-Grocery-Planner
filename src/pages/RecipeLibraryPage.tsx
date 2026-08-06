@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SearchX } from 'lucide-react';
+import { LoaderCircle, SearchX } from 'lucide-react';
 import type { DietaryTag, Difficulty, RecipeCategory, RecipeFilterState } from '@/types';
 import { applyRecipeFilters, DEFAULT_FILTER_STATE } from '@/lib/filters';
 import { useAllRecipes } from '@/stores/useRecipeStore';
@@ -20,8 +20,20 @@ const VALID_TAGS: DietaryTag[] = [
   'healthy',
   'comfort-food',
   'quick',
+  'pescatarian',
+  'keto',
+  'paleo',
+  'mediterranean',
+  'kid-friendly',
+  'meal-prep',
+  'one-pot',
+  'budget-friendly',
+  'air-fryer',
+  'high-fiber',
+  'nut-free',
 ];
 const VALID_DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
+const RECIPE_BATCH_SIZE = 24;
 
 function filtersFromSearchParams(params: URLSearchParams): RecipeFilterState {
   const category = params.get('category');
@@ -53,6 +65,8 @@ export default function RecipeLibraryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => filtersFromSearchParams(searchParams), [searchParams]);
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(RECIPE_BATCH_SIZE);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const allRecipes = useAllRecipes();
 
   useEffect(() => {
@@ -61,6 +75,28 @@ export default function RecipeLibraryPage() {
   }, []);
 
   const filteredRecipes = useMemo(() => applyRecipeFilters(allRecipes, filters), [allRecipes, filters]);
+  const visibleRecipes = useMemo(() => filteredRecipes.slice(0, visibleCount), [filteredRecipes, visibleCount]);
+  const hasMore = visibleCount < filteredRecipes.length;
+
+  useEffect(() => {
+    setVisibleCount(RECIPE_BATCH_SIZE);
+  }, [allRecipes, filters]);
+
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || loading || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount((current) => Math.min(current + RECIPE_BATCH_SIZE, filteredRecipes.length));
+        }
+      },
+      { rootMargin: '720px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [filteredRecipes.length, hasMore, loading]);
 
   function handleChange(patch: Partial<RecipeFilterState>) {
     setSearchParams(searchParamsFromFilters({ ...filters, ...patch }), { replace: true });
@@ -90,7 +126,18 @@ export default function RecipeLibraryPage() {
             action={{ label: 'Clear filters', onClick: handleClear }}
           />
         ) : (
-          <RecipeGrid recipes={filteredRecipes} />
+          <>
+            <RecipeGrid recipes={visibleRecipes} />
+            {hasMore && (
+              <div ref={loadMoreRef} className="flex min-h-20 items-center justify-center gap-2 text-sm text-text-muted" role="status">
+                <LoaderCircle size={16} className="animate-spin" />
+                Loading more recipes
+              </div>
+            )}
+            {!hasMore && filteredRecipes.length > RECIPE_BATCH_SIZE && (
+              <p className="py-8 text-center text-sm text-text-muted">You have reached the end of this collection.</p>
+            )}
+          </>
         )}
       </div>
     </div>

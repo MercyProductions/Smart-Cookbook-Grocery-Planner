@@ -1,4 +1,5 @@
-import type { CustomGroceryItem, GroceryCategory, GroceryItem, GroceryLine, MealPlanEntry, Recipe } from '@/types';
+import type { CustomGroceryItem, GroceryCategory, GroceryItem, GroceryItemOverride, GroceryLine, GrocerySource, MealPlanEntry, Recipe } from '@/types';
+import { normalizeIngredientName, pantryHasIngredient } from './ingredients';
 import { scaleIngredient } from './scaling';
 import { chooseDisplayUnit, getUnitFamily, toBaseUnits, type UnitFamily } from './units';
 
@@ -8,9 +9,13 @@ const CATEGORY_ORDER: GroceryCategory[] = [
   'dairy-eggs',
   'bakery',
   'pantry',
+  'pasta-rice',
+  'canned-goods',
   'frozen',
   'spices',
+  'condiments',
   'beverages',
+  'household',
   'other',
 ];
 
@@ -20,6 +25,7 @@ interface GroupAccumulator {
   category: GroceryCategory;
   baseQuantity: number;
   sourceRecipes: Set<string>;
+  sources: GrocerySource[];
 }
 
 // Merges ingredients across the meal plan into a grocery list. Same
@@ -38,22 +44,25 @@ export function buildGroceryList(entries: MealPlanEntry[], recipes: Recipe[]): G
     for (const ingredient of recipe.ingredients) {
       const scaled = scaleIngredient(ingredient, factor);
       const family = getUnitFamily(scaled.unit);
-      const key = `${scaled.name}|${family}`;
+      const name = normalizeIngredientName(scaled.name);
+      const key = `${name}|${family}`;
 
       let group = groups.get(key);
       if (!group) {
         group = {
-          name: scaled.name,
+          name,
           family,
           category: scaled.groceryCategory,
           baseQuantity: 0,
           sourceRecipes: new Set(),
+          sources: [],
         };
         groups.set(key, group);
       }
 
       group.baseQuantity += toBaseUnits(scaled.quantity, scaled.unit);
       group.sourceRecipes.add(recipe.title);
+      group.sources.push({ recipeTitle: recipe.title, quantity: scaled.quantity, unit: scaled.unit });
     }
   }
 
@@ -66,6 +75,7 @@ export function buildGroceryList(entries: MealPlanEntry[], recipes: Recipe[]): G
       unit,
       category: group.category,
       sourceRecipes: Array.from(group.sourceRecipes).sort(),
+      sources: group.sources.sort((left, right) => left.recipeTitle.localeCompare(right.recipeTitle)),
       isCustom: false,
     };
   });
@@ -81,6 +91,7 @@ interface GroceryOverlayState {
   checkedKeys: string[];
   removedKeys: string[];
   customItems: CustomGroceryItem[];
+  itemOverrides?: Record<string, GroceryItemOverride>;
 }
 
 // Overlays persisted check/remove/custom-item state onto a freshly generated
@@ -90,7 +101,11 @@ export function overlayGroceryState(items: GroceryItem[], state: GroceryOverlayS
   const visible = items.filter((item) => !state.removedKeys.includes(item.key));
 
   return [
-    ...visible.map((item) => ({ ...item, checked: state.checkedKeys.includes(item.key) })),
+    ...visible.map((item) => ({ ...item, ...state.itemOverrides?.[item.key], checked: state.checkedKeys.includes(item.key) })),
     ...state.customItems.map((item) => ({ ...item, checked: state.checkedKeys.includes(item.key) })),
   ];
+}
+
+export function excludePantryItems(items: GroceryItem[], pantryNames: Iterable<string>): GroceryItem[] {
+  return items.filter((item) => !pantryHasIngredient(pantryNames, item.name));
 }

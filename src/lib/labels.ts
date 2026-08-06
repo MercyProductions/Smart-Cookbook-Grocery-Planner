@@ -26,6 +26,17 @@ export const TAG_LABELS: Record<DietaryTag, string> = {
   healthy: 'Healthy',
   'comfort-food': 'Comfort Food',
   quick: 'Quick',
+  pescatarian: 'Pescatarian',
+  keto: 'Keto',
+  paleo: 'Paleo',
+  mediterranean: 'Mediterranean',
+  'kid-friendly': 'Kid-Friendly',
+  'meal-prep': 'Meal Prep',
+  'one-pot': 'One Pot',
+  'budget-friendly': 'Budget-Friendly',
+  'air-fryer': 'Air Fryer',
+  'high-fiber': 'High-Fiber',
+  'nut-free': 'Nut-Free',
 };
 
 export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
@@ -65,8 +76,12 @@ export const GROCERY_CATEGORY_LABELS: Record<GroceryCategory, string> = {
   'dairy-eggs': 'Dairy & Eggs',
   bakery: 'Bakery',
   pantry: 'Pantry',
+  'pasta-rice': 'Pasta & Rice',
+  'canned-goods': 'Canned Goods',
   frozen: 'Frozen',
   spices: 'Spices',
+  condiments: 'Condiments',
   beverages: 'Beverages',
+  household: 'Household',
   other: 'Other',
 };

@@ -3,13 +3,17 @@ export type RecipeCategory =
 
 export type DietaryTag =
   | 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free'
-  | 'high-protein' | 'low-carb' | 'healthy' | 'comfort-food' | 'quick';
+  | 'high-protein' | 'low-carb' | 'healthy' | 'comfort-food' | 'quick'
+  | 'pescatarian' | 'keto' | 'paleo' | 'mediterranean' | 'kid-friendly'
+  | 'meal-prep' | 'one-pot' | 'budget-friendly' | 'air-fryer' | 'high-fiber'
+  | 'nut-free';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export type GroceryCategory =
   | 'produce' | 'meat-seafood' | 'dairy-eggs' | 'bakery'
-  | 'pantry' | 'frozen' | 'spices' | 'beverages' | 'other';
+  | 'pantry' | 'pasta-rice' | 'canned-goods' | 'frozen' | 'spices'
+  | 'condiments' | 'beverages' | 'household' | 'other';
 
 // Units — closed set. Anything not listed uses 'unit' (a countable) or 'to-taste'.
 export type Unit =
@@ -37,6 +41,7 @@ export interface Recipe {
   title: string;
   description: string;       // 1–2 sentences
   category: RecipeCategory;
+  cuisine?: string;
   tags: DietaryTag[];
   prepMinutes: number;
   cookMinutes: number;
@@ -45,6 +50,7 @@ export interface Recipe {
   image: RecipeImage;
   ingredients: Ingredient[];
   instructions: string[];    // one string per step, imperative voice
+  notes?: string;
   nutrition?: NutritionInfo; // placeholder — optional, render "—" when absent
   isCustom: boolean;         // true for user-created recipes
   createdAt: string;         // ISO 8601
@@ -65,9 +71,14 @@ export interface NutritionInfo {   // per serving, all optional
   fatG?: number;
 }
 
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner';
+
 export interface MealPlanEntry {
+  id?: string;
   recipeId: string;
-  servings: number;          // user-chosen; may differ from recipe.servings
+  servings: number;
+  date?: string;
+  mealSlot?: MealSlot;
 }
 
 // Derived — never persisted. Produced by buildGroceryList().
@@ -78,7 +89,15 @@ export interface GroceryItem {
   unit: Unit;                  // chosen display unit
   category: GroceryCategory;
   sourceRecipes: string[];     // recipe titles contributing to this line
+  sources: GrocerySource[];
+  note?: string;
   isCustom: false;
+}
+
+export interface GrocerySource {
+  recipeTitle: string;
+  quantity: number;
+  unit: Unit;
 }
 
 // Persisted in useGroceryStore.
@@ -88,7 +107,19 @@ export interface CustomGroceryItem {
   quantity?: number;
   unit?: Unit;
   category: GroceryCategory;   // user picks, default 'other'
+  note?: string;
   isCustom: true;
+}
+
+export interface GroceryItemOverride {
+  quantity?: number;
+  unit?: Unit;
+  note?: string;
+}
+
+export interface PantryItem {
+  name: string;
+  category?: GroceryCategory;
 }
 
 // What the Grocery List page renders (after overlaying store state):

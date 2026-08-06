@@ -72,6 +72,16 @@ const FAMILY_UNITS_ASCENDING: Record<UnitFamily, Unit[]> = {
   'to-taste': ['to-taste'],
 };
 
+// Promote only when the resulting value is easy to read in a grocery aisle.
+// For example, 3 tbsp should not become the less useful "0.2 cup".
+const DISPLAY_MINIMUMS: Partial<Record<Unit, number>> = {
+  tbsp: 1,
+  cup: 0.25,
+  l: 0.25,
+  lb: 0.5,
+  kg: 0.25,
+};
+
 export function getUnitFamily(unit: Unit): UnitFamily {
   return UNIT_FAMILY[unit];
 }
@@ -118,7 +128,7 @@ export function chooseDisplayUnit(baseQuantity: number, family: UnitFamily): { q
   for (let i = units.length - 1; i >= 0; i--) {
     const unit = units[i];
     const value = baseQuantity / TO_BASE_FACTOR[unit];
-    if (formatQuantity(value) !== '0') {
+    if (value >= (DISPLAY_MINIMUMS[unit] ?? 1)) {
       return { quantity: value, unit };
     }
   }

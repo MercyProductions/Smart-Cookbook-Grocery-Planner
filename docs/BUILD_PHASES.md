@@ -13,7 +13,7 @@ Execute strictly in order. Each phase ends with its acceptance criteria verified
 2. Install deps per PLAN.md § Dependencies; wire Tailwind v4 via `@tailwindcss/vite`; add design tokens from DESIGN.md to `index.css`.
 3. `tsconfig`: strict true, path alias `@/* → src/*` (also in `vite.config.ts`).
 4. Create `src/types/index.ts` exactly per DATA_MODELS.md §1–2.
-5. Create `src/data/vocabulary.ts` (~60 canonical ingredients) then `src/data/recipes.ts` (24 seed recipes per DATA_MODELS.md §5). This is the longest single task in the phase — take the time to make the recipes real.
+5. Create `src/data/vocabulary.ts` (~60 canonical ingredients) then `src/data/recipes.ts`, the curated expansions, and the generated recipe atlas (the 2,000+ seed recipes described in DATA_MODELS.md §5). This is the longest single task in the phase — take the time to make the recipes real.
 6. Routing skeleton: `AppShell` (sidebar + mobile tab bar per PLAN.md §5), all 9 routes rendering placeholder pages, 404 route, theme toggle working end-to-end (settings store + `.dark` class + persistence).
 
 **Accept:** dev server runs; can navigate all routes on desktop and mobile widths; dark mode toggles and survives reload; `tsc --noEmit` passes.
@@ -88,15 +88,19 @@ Execute strictly in order. Each phase ends with its acceptance criteria verified
 - [ ] Keyboard-only pass: tab through library → open detail → add to plan → check a grocery item.
 - [ ] No horizontal scroll at 375px; tab bar respects safe-area.
 
-## Future upgrade ideas (v2+ — do NOT build now)
+## Shipped revamp features
 
-1. Weekly calendar meal planning (assign recipes to days; grocery list per week).
-2. Pantry tracking — "already have it" excludes items from the list.
-3. Real unit-conversion preferences (metric ⇄ US) with explicit user opt-in.
-4. Recipe import from URL (schema.org/Recipe scraping).
-5. Real nutrition data (per-ingredient DB or API) replacing the placeholder.
-6. Share/print/export grocery list (text, PDF) and recipe sharing links.
-7. PWA: offline support + install prompt (natural fit — already local-first).
-8. Accounts + cloud sync (the versioned store keys were designed for this migration).
-9. Cook mode: step-by-step fullscreen instructions with wake-lock and timers.
-10. AI features: "what can I make with what's in my pantry", auto-tagging, smart ingredient parsing for pasted recipes.
+- Date-based breakfast, lunch, and dinner planning with week navigation and date-range grocery generation.
+- Pantry exclusions, editable grocery quantities and notes, and expandable recipe contribution tracking.
+- Step-by-step cooking mode, local cooking history, recently cooked meals, and pantry-aware Pick for me suggestions.
+
+## Future upgrade ideas (v2+)
+
+1. Real unit-conversion preferences (metric to US) with explicit user opt-in.
+2. Recipe import from URL (schema.org/Recipe scraping).
+3. Real nutrition data (per-ingredient database or API) replacing the placeholder.
+4. Share, print, and export grocery lists; recipe sharing links.
+5. PWA offline support and an install prompt.
+6. Accounts and cloud sync.
+7. Cooking timers and optional wake-lock support.
+8. Smart ingredient parsing for pasted recipes and richer pantry-based suggestions.

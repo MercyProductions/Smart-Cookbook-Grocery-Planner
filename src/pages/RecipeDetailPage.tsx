@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Check, Clock, Copy, Heart, Pencil, Plus, Trash2, Users } from 'lucide-react';
+import { Check, ChefHat, Clock, Copy, Heart, Pencil, Plus, ShoppingBasket, Trash2, Users } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/labels';
 import { scaleIngredient } from '@/lib/scaling';
 import { formatIngredientLine } from '@/lib/units';
@@ -9,6 +9,7 @@ import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useMealPlanStore } from '@/stores/useMealPlanStore';
 import { useAllRecipes, useRecipeById, useRecipeStore } from '@/stores/useRecipeStore';
 import { useToastStore } from '@/stores/useToastStore';
+import { useGroceryStore } from '@/stores/useGroceryStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -35,6 +36,7 @@ export default function RecipeDetailPage() {
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const deleteRecipe = useRecipeStore((state) => state.deleteRecipe);
   const showToast = useToastStore((state) => state.showToast);
+  const addCustomItem = useGroceryStore((state) => state.addCustomItem);
 
   useEffect(() => {
     if (recipe) setServings(recipe.servings);
@@ -78,6 +80,19 @@ export default function RecipeDetailPage() {
     showToast(isFavorite ? 'Removed from favorites' : 'Added to favorites');
   }
 
+  function handleAddIngredients() {
+    scaledIngredients.forEach((ingredient) => {
+      addCustomItem({
+        name: ingredient.name,
+        quantity: ingredient.unit === 'to-taste' ? undefined : ingredient.quantity,
+        unit: ingredient.unit === 'to-taste' ? undefined : ingredient.unit,
+        category: ingredient.groceryCategory,
+        note: ingredient.note,
+      });
+    });
+    showToast('Ingredients added to grocery list');
+  }
+
   function handleDelete() {
     deleteRecipe(recipeId);
     showToast('Recipe deleted');
@@ -96,6 +111,7 @@ export default function RecipeDetailPage() {
                 <span className="text-xs font-medium text-primary">{CATEGORY_LABELS[recipe.category]}</span>
                 <h1 className="mt-1 text-xl font-semibold tracking-tight">{recipe.title}</h1>
                 <p className="mt-1 text-sm text-text-muted">{recipe.description}</p>
+                {recipe.cuisine && <p className="mt-2 text-xs font-medium text-text-muted">{recipe.cuisine} cuisine</p>}
               </div>
 
               <div className="flex flex-wrap gap-1.5">
@@ -125,13 +141,21 @@ export default function RecipeDetailPage() {
               </div>
 
               <div className="space-y-2 pt-1">
+                <Button className="w-full" onClick={() => navigate(`/recipes/${recipe.id}/cook`)}>
+                  <ChefHat size={16} />
+                  Cook this
+                </Button>
                 <Button
                   className="w-full"
-                  variant={inPlan ? 'secondary' : 'primary'}
+                  variant="secondary"
                   onClick={handleToggleMealPlan}
                 >
                   {inPlan ? <Check size={16} /> : <Plus size={16} />}
                   {inPlan ? 'In Meal Plan' : 'Add to Meal Plan'}
+                </Button>
+                <Button variant="secondary" className="w-full" onClick={handleAddIngredients}>
+                  <ShoppingBasket size={16} />
+                  Add ingredients to list
                 </Button>
                 <Button
                   variant="secondary"
@@ -207,6 +231,13 @@ export default function RecipeDetailPage() {
               ))}
             </ol>
           </section>
+
+          {recipe.notes && (
+            <section className="mt-8 border-t border-border pt-6">
+              <h2 className="text-lg font-semibold tracking-tight">Notes</h2>
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-muted">{recipe.notes}</p>
+            </section>
+          )}
 
           <SimilarRecipes recipes={similarRecipes} />
         </div>

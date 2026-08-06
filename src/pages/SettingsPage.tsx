@@ -4,6 +4,8 @@ import type { ThemePreference } from '@/stores/useSettingsStore';
 import { useFavoritesStore } from '@/stores/useFavoritesStore';
 import { useGroceryStore } from '@/stores/useGroceryStore';
 import { useMealPlanStore } from '@/stores/useMealPlanStore';
+import { useMealHistoryStore } from '@/stores/useMealHistoryStore';
+import { usePantryStore } from '@/stores/usePantryStore';
 import { useRecipeStore } from '@/stores/useRecipeStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useToastStore } from '@/stores/useToastStore';
@@ -32,6 +34,8 @@ export default function SettingsPage() {
   const resetRecipes = useRecipeStore((state) => state.reset);
   const resetMealPlan = useMealPlanStore((state) => state.reset);
   const resetGroceries = useGroceryStore((state) => state.reset);
+  const resetPantry = usePantryStore((state) => state.reset);
+  const resetHistory = useMealHistoryStore((state) => state.reset);
   const clearFavorites = useFavoritesStore((state) => state.clear);
   const showToast = useToastStore((state) => state.showToast);
   const [resetOpen, setResetOpen] = useState(false);
@@ -40,6 +44,8 @@ export default function SettingsPage() {
     resetRecipes();
     resetMealPlan();
     resetGroceries();
+    resetPantry();
+    resetHistory();
     clearFavorites();
     resetSettings();
     setResetOpen(false);
@@ -105,7 +111,7 @@ export default function SettingsPage() {
         <Card className="p-5 lg:self-start">
           <h2 className="text-lg font-semibold tracking-tight">Local Data</h2>
           <p className="mt-2 text-sm text-text-muted">
-            Recipes, favorites, meal plan, grocery checks, custom items, and settings are stored on this device.
+            Recipes, favorites, meal plan, groceries, pantry staples, cooking history, and settings are stored on this device.
           </p>
           <Button variant="danger" className="mt-5 w-full" onClick={() => setResetOpen(true)}>
             <RotateCcw size={16} />
@@ -117,7 +123,7 @@ export default function SettingsPage() {
       <ConfirmDialog
         open={resetOpen}
         title="Reset all data?"
-        body="This clears custom recipes, favorites, meal plan, grocery list state, and settings on this device. This can't be undone."
+        body="This clears custom recipes, favorites, meal plan, grocery list state, pantry staples, cooking history, and settings on this device. This can't be undone."
         confirmLabel="Reset all"
         danger
         onConfirm={handleResetAll}

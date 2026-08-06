@@ -7,6 +7,9 @@ import type {
   Unit,
 } from '@/types';
 import { findVocabularyEntry } from './vocabulary';
+import { EXPANDED_RECIPES } from './expandedRecipes';
+import { MORE_RECIPES } from './moreRecipes';
+import { GENERATED_RECIPES } from './generatedRecipes';
 
 function ing(name: string, quantity: number, unit: Unit, note?: string): Ingredient {
   const entry = findVocabularyEntry(name);
@@ -58,7 +61,7 @@ function recipe(input: SeedRecipeInput): Recipe {
   };
 }
 
-export const SEED_RECIPES: Recipe[] = [
+const CORE_SEED_RECIPES: Recipe[] = [
   // ───────────────────────── breakfast ─────────────────────────
   recipe({
     id: 'seed-fluffy-pancakes',
@@ -828,3 +831,9 @@ export const SEED_RECIPES: Recipe[] = [
     createdAt: '2026-01-27T00:00:00.000Z',
   }),
 ];
+
+const CATEGORY_ORDER: RecipeCategory[] = ['breakfast', 'lunch', 'dinner', 'dessert', 'snack'];
+
+export const SEED_RECIPES: Recipe[] = [...CORE_SEED_RECIPES, ...EXPANDED_RECIPES, ...MORE_RECIPES, ...GENERATED_RECIPES].sort(
+  (left, right) => CATEGORY_ORDER.indexOf(left.category) - CATEGORY_ORDER.indexOf(right.category),
+);

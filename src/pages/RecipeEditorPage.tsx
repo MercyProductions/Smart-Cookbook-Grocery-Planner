@@ -67,6 +67,7 @@ interface RecipeFormState {
   title: string;
   description: string;
   category: RecipeCategory;
+  cuisine: string;
   tags: DietaryTag[];
   difficulty: Difficulty;
   prepMinutes: string;
@@ -75,6 +76,7 @@ interface RecipeFormState {
   emoji: string;
   ingredients: IngredientDraft[];
   instructions: string[];
+  notes: string;
 }
 
 interface FormErrors {
@@ -102,6 +104,7 @@ function recipeToForm(recipe: Recipe | undefined, defaultServings: number): Reci
     title: recipe?.title ?? '',
     description: recipe?.description ?? '',
     category: recipe?.category ?? 'dinner',
+    cuisine: recipe?.cuisine ?? '',
     tags: recipe?.tags ?? [],
     difficulty: recipe?.difficulty ?? 'easy',
     prepMinutes: String(recipe?.prepMinutes ?? 10),
@@ -118,6 +121,7 @@ function recipeToForm(recipe: Recipe | undefined, defaultServings: number): Reci
         note: ingredient.note ?? '',
       })) ?? [blankIngredient()],
     instructions: recipe?.instructions.length ? [...recipe.instructions] : [''],
+    notes: recipe?.notes ?? '',
   };
 }
 
@@ -315,6 +319,7 @@ export default function RecipeEditorPage() {
       title: form.title.trim(),
       description: form.description.trim(),
       category: form.category,
+      ...(form.cuisine.trim() ? { cuisine: form.cuisine.trim() } : {}),
       tags: form.tags,
       prepMinutes: parseNonNegative(form.prepMinutes) ?? 0,
       cookMinutes: parseNonNegative(form.cookMinutes) ?? 0,
@@ -323,6 +328,7 @@ export default function RecipeEditorPage() {
       image: { emoji: form.emoji },
       ingredients: buildIngredients(form.ingredients),
       instructions: form.instructions.map((step) => step.trim()).filter(Boolean),
+      ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       isCustom: true,
       createdAt: isEditingCustom && sourceRecipe ? sourceRecipe.createdAt : now,
       updatedAt: now,
@@ -421,6 +427,13 @@ export default function RecipeEditorPage() {
                   ))}
                 </Select>
               </Field>
+              <Field label="Cuisine">
+                <Input
+                  value={form.cuisine}
+                  onChange={(event) => updateForm({ cuisine: event.target.value })}
+                  placeholder="e.g. Mexican, Italian, Korean"
+                />
+              </Field>
               <Field label="Difficulty">
                 <Select value={form.difficulty} onChange={(event) => updateForm({ difficulty: event.target.value as Difficulty })}>
                   {DIFFICULTIES.map((difficulty) => (
@@ -499,6 +512,15 @@ export default function RecipeEditorPage() {
                 ))}
               </div>
             </div>
+            <Field label="Recipe notes" className="mt-4">
+              <textarea
+                value={form.notes}
+                onChange={(event) => updateForm({ notes: event.target.value })}
+                rows={3}
+                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-text placeholder:text-text-muted focus:border-primary focus:outline-none"
+                placeholder="Substitutions, serving ideas, or anything worth remembering."
+              />
+            </Field>
           </Card>
 
           <Card className="p-5">
