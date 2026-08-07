@@ -12,7 +12,7 @@ interface SettingsState {
 }
 
 const DEFAULT_SETTINGS = {
-  theme: 'system' as ThemePreference,
+  theme: 'light' as ThemePreference,
   defaultServings: 4,
 };
 
@@ -26,7 +26,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'cookbook.settings.v1',
-      version: 1,
+      version: 2,
       partialize: (state) => ({
         theme: state.theme,
         defaultServings: state.defaultServings,
@@ -34,10 +34,9 @@ export const useSettingsStore = create<SettingsState>()(
       migrate: (persisted) => {
         const state = persisted as Partial<SettingsState> | undefined;
         return {
-          theme:
-            state?.theme === 'light' || state?.theme === 'dark' || state?.theme === 'system'
-              ? state.theme
-              : DEFAULT_SETTINGS.theme,
+          // Earlier installs followed the operating system, which could make the app
+          // feel disconnected from the intentionally light public experience.
+          theme: state?.theme === 'dark' ? 'dark' : 'light',
           defaultServings:
             typeof state?.defaultServings === 'number' && Number.isFinite(state.defaultServings)
               ? Math.max(1, state.defaultServings)

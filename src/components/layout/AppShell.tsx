@@ -16,7 +16,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-surface text-text">
+    <div className="min-h-screen bg-[#f7f7f4] text-text">
       <Sidebar />
       <MobileTopBar />
 
