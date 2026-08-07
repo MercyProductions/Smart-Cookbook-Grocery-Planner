@@ -9,7 +9,7 @@ export function Sidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-border bg-card px-4 py-6 lg:flex">
-      <Link to="/" className="mb-9 flex items-center gap-2 px-2 text-text">
+      <Link to="/" className="mb-9 flex items-center gap-2 px-2 text-text" aria-label="Cookbook public home">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-[0_5px_14px_rgba(189,41,36,0.18)]">
           <BookOpenText size={18} />
         </span>

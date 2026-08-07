@@ -12,12 +12,14 @@ import FavoritesPage from '@/pages/FavoritesPage';
 import SettingsPage from '@/pages/SettingsPage';
 import AccountPage from '@/pages/AccountPage';
 import NotFoundPage from '@/pages/NotFoundPage';
+import LandingPage from '@/pages/LandingPage';
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route element={<AppShell />}>
-        <Route path="/" element={<DashboardPage />} />
+        <Route path="/kitchen" element={<DashboardPage />} />
         <Route path="/recipes" element={<RecipeLibraryPage />} />
         <Route path="/recipes/new" element={<RecipeEditorPage />} />
         <Route path="/recipes/:id" element={<RecipeDetailPage />} />
