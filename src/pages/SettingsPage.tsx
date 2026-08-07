@@ -9,6 +9,7 @@ import { usePantryStore } from '@/stores/usePantryStore';
 import { useRecipeStore } from '@/stores/useRecipeStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useToastStore } from '@/stores/useToastStore';
+import { useAccountStore } from '@/stores/useAccountStore';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -37,6 +38,7 @@ export default function SettingsPage() {
   const resetPantry = usePantryStore((state) => state.reset);
   const resetHistory = useMealHistoryStore((state) => state.reset);
   const clearFavorites = useFavoritesStore((state) => state.clear);
+  const resetAccount = useAccountStore((state) => state.reset);
   const showToast = useToastStore((state) => state.showToast);
   const [resetOpen, setResetOpen] = useState(false);
 
@@ -47,6 +49,7 @@ export default function SettingsPage() {
     resetPantry();
     resetHistory();
     clearFavorites();
+    resetAccount();
     resetSettings();
     setResetOpen(false);
     showToast('All data reset');

@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   CalendarDays,
+  CircleUserRound,
   Dices,
   Heart,
   Search,
+  ShieldCheck,
   ShoppingBasket,
   type LucideIcon,
 } from 'lucide-react';
@@ -23,6 +25,8 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { RecipeImage } from '@/components/recipes/RecipeImage';
 import { Button } from '@/components/ui/Button';
 import heroImage from '@/assets/hero-roast-chicken.png';
+import { useAccountStore } from '@/stores/useAccountStore';
+import { getRecipeAllergenMatches } from '@/lib/allergens';
 
 const CATEGORIES = Object.keys(CATEGORY_LABELS) as RecipeCategory[];
 
@@ -39,6 +43,13 @@ function featuredForToday(recipes: Recipe[]): Recipe[] {
   return [...recipes]
     .sort((a, b) => hashString(`${dateKey}-${a.id}`) - hashString(`${dateKey}-${b.id}`))
     .slice(0, 4);
+}
+
+function timeOfDayGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
 }
 
 function pickRecommendation(
@@ -74,6 +85,10 @@ export default function DashboardPage() {
   const favoriteIds = useFavoritesStore((state) => state.favoriteIds);
   const cookedMeals = useMealHistoryStore((state) => state.cookedMeals);
   const pantryItems = usePantryStore((state) => state.items);
+  const displayName = useAccountStore((state) => state.displayName);
+  const dietaryPreferences = useAccountStore((state) => state.dietaryPreferences);
+  const allergies = useAccountStore((state) => state.allergies);
+  const hideAllergenMatches = useAccountStore((state) => state.hideAllergenMatches);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [pickedRecipe, setPickedRecipe] = useState<Recipe | undefined>();
@@ -91,7 +106,14 @@ export default function DashboardPage() {
     return overlayGroceryState(items, { checkedKeys, removedKeys, customItems, itemOverrides });
   }, [allRecipes, checkedKeys, customItems, entries, excludePantry, itemOverrides, pantryItems, removedKeys]);
 
-  const featured = useMemo(() => featuredForToday(allRecipes), [allRecipes]);
+  const discoveryRecipes = useMemo(() => {
+    return allRecipes.filter((recipe) => {
+      if (dietaryPreferences.length > 0 && !dietaryPreferences.every((tag) => recipe.tags.includes(tag))) return false;
+      if (hideAllergenMatches && allergies.length > 0 && getRecipeAllergenMatches(recipe, allergies).length > 0) return false;
+      return true;
+    });
+  }, [allRecipes, allergies, dietaryPreferences, hideAllergenMatches]);
+  const featured = useMemo(() => featuredForToday(discoveryRecipes), [discoveryRecipes]);
   const plannedRecipes = entries
     .map((entry) => ({ entry, recipe: allRecipes.find((recipe) => recipe.id === entry.recipeId) }))
     .filter((item): item is { entry: (typeof entries)[number]; recipe: Recipe } => Boolean(item.recipe))
@@ -111,6 +133,8 @@ export default function DashboardPage() {
   )
     .sort((left, right) => right.count - left.count || left.recipe.title.localeCompare(right.recipe.title))
     .slice(0, 3);
+  const greetingName = displayName.trim() ? `, ${displayName.trim()}` : '';
+  const preferenceCount = dietaryPreferences.length + allergies.length;
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -121,7 +145,7 @@ export default function DashboardPage() {
   function handlePickForMe() {
     setPickedRecipe(
       pickRecommendation(
-        allRecipes,
+        discoveryRecipes,
         favoriteIds,
         pantryItems.map((item) => item.name),
         cookedMeals.map((meal) => meal.recipeId),
@@ -135,15 +159,15 @@ export default function DashboardPage() {
         className="relative isolate min-h-[455px] overflow-hidden rounded-lg border border-border bg-[#e9e6df] bg-cover bg-right bg-no-repeat md:min-h-[500px]"
         style={{ backgroundImage: `url(${heroImage})` }}
       >
-        <div className="relative z-10 flex min-h-[455px] max-w-[580px] flex-col justify-center px-6 py-10 md:min-h-[500px] md:px-12">
-          <p className="text-sm font-semibold text-primary">The kitchen is open</p>
-          <h1 className="mt-3 font-display text-[44px] leading-[0.97] text-[#171817] sm:text-[58px]">
-            What will you cook today?
+        <div className="relative z-10 flex min-h-[455px] max-w-[500px] flex-col justify-center px-6 py-10 md:min-h-[500px] md:px-12">
+          <p className="text-sm font-semibold text-primary">{timeOfDayGreeting()}{greetingName}</p>
+          <h1 className="mt-3 max-w-[470px] font-display text-[44px] leading-[0.97] text-[#171817] sm:text-[58px]">
+            Your kitchen, right on time.
           </h1>
-          <p className="mt-5 max-w-md text-base leading-7 text-[#5e625d]">
-            A generous recipe collection for quick wins, slow Sundays, and everything in between.
+          <p className="mt-5 max-w-[390px] text-base leading-7 text-[#5e625d]">
+            Your plan, pantry, and personal preferences are all in one place. Decide less. Cook more.
           </p>
-          <form onSubmit={handleSearch} className="relative mt-7 max-w-[460px]">
+          <form onSubmit={handleSearch} className="relative mt-7 max-w-[420px]">
             <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" />
             <input
               type="search"
@@ -163,7 +187,7 @@ export default function DashboardPage() {
             to="/meal-plan"
             className="mt-5 inline-flex w-fit items-center gap-2 text-sm font-semibold text-[#171817] transition-colors hover:text-primary"
           >
-            Start this week's plan <ArrowRight size={16} />
+            Open this week&apos;s plan <ArrowRight size={16} />
           </Link>
         </div>
       </section>
@@ -178,6 +202,11 @@ export default function DashboardPage() {
         />
         <StatCard icon={Heart} label="Saved favourites" value={favoriteIds.length} to="/favorites" />
       </section>
+
+      <Link to="/account" className="group mt-5 flex flex-col gap-4 border border-border bg-card p-4 transition-colors hover:border-text/25 hover:bg-surface sm:flex-row sm:items-center sm:justify-between">
+        <span className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary"><CircleUserRound size={19} /></span><span><span className="block text-sm font-semibold text-text">{displayName.trim() || 'Personalize your kitchen'}</span><span className="mt-0.5 block text-xs text-text-muted">{preferenceCount > 0 ? `${preferenceCount} food preference${preferenceCount === 1 ? '' : 's'} active` : 'Add dietary preferences and allergies'}</span></span></span>
+        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-text group-hover:text-primary"><ShieldCheck size={16} /> Account <ArrowRight size={16} /></span>
+      </Link>
 
       <section className="mt-12 grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.85fr)]">
         <div>

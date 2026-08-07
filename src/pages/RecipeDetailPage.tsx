@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Check, ChefHat, Clock, Copy, Heart, Pencil, Plus, ShoppingBasket, Trash2, Users } from 'lucide-react';
+import { Check, ChefHat, Clock, Copy, Heart, Pencil, Plus, ShoppingBasket, Trash2, TriangleAlert, Users } from 'lucide-react';
 import { CATEGORY_LABELS } from '@/lib/labels';
 import { scaleIngredient } from '@/lib/scaling';
 import { formatIngredientLine } from '@/lib/units';
@@ -19,6 +19,8 @@ import { DifficultyBadge } from '@/components/recipes/DifficultyBadge';
 import { TagPill } from '@/components/recipes/TagPill';
 import { NutritionCard } from '@/components/recipes/NutritionCard';
 import { SimilarRecipes } from '@/components/recipes/SimilarRecipes';
+import { useAccountStore } from '@/stores/useAccountStore';
+import { ALLERGY_LABELS, getRecipeAllergenMatches } from '@/lib/allergens';
 
 export default function RecipeDetailPage() {
   const { id } = useParams();
@@ -37,6 +39,7 @@ export default function RecipeDetailPage() {
   const deleteRecipe = useRecipeStore((state) => state.deleteRecipe);
   const showToast = useToastStore((state) => state.showToast);
   const addCustomItem = useGroceryStore((state) => state.addCustomItem);
+  const allergies = useAccountStore((state) => state.allergies);
 
   useEffect(() => {
     if (recipe) setServings(recipe.servings);
@@ -62,6 +65,7 @@ export default function RecipeDetailPage() {
   const scaledIngredients = recipe.ingredients.map((ingredient) => scaleIngredient(ingredient, factor));
   const totalMinutes = recipe.prepMinutes + recipe.cookMinutes;
   const similarRecipes = getSimilarRecipes(recipe, allRecipes, 4);
+  const allergyMatches = getRecipeAllergenMatches(recipe, allergies);
 
   const recipeId = recipe.id;
 
@@ -112,6 +116,12 @@ export default function RecipeDetailPage() {
                 <h1 className="mt-1 font-display text-[34px] leading-[1.05] text-text">{recipe.title}</h1>
                 <p className="mt-3 text-sm leading-6 text-text-muted">{recipe.description}</p>
                 {recipe.cuisine && <p className="mt-2 text-xs font-medium text-text-muted">{recipe.cuisine} cuisine</p>}
+                {allergyMatches.length > 0 && (
+                  <div className="mt-4 border-l-2 border-primary bg-primary-soft px-3 py-2.5 text-xs leading-5 text-text">
+                    <span className="flex items-center gap-1.5 font-semibold text-primary"><TriangleAlert size={14} /> Allergy check</span>
+                    <p className="mt-1">Potential match: {allergyMatches.map((allergy) => ALLERGY_LABELS[allergy]).join(', ')}. Check ingredient labels before cooking.</p>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-1.5">

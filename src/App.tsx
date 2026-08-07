@@ -10,6 +10,7 @@ import PantryPage from '@/pages/PantryPage';
 import CookingModePage from '@/pages/CookingModePage';
 import FavoritesPage from '@/pages/FavoritesPage';
 import SettingsPage from '@/pages/SettingsPage';
+import AccountPage from '@/pages/AccountPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/grocery-list" element={<GroceryListPage />} />
         <Route path="/pantry" element={<PantryPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
+        <Route path="/account" element={<AccountPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

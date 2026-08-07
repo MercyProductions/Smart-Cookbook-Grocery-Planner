@@ -14,6 +14,8 @@ import {
 } from '@/lib/dates';
 import { useMealPlanStore } from '@/stores/useMealPlanStore';
 import { useAllRecipes } from '@/stores/useRecipeStore';
+import { useAccountStore } from '@/stores/useAccountStore';
+import { getRecipeAllergenMatches } from '@/lib/allergens';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input } from '@/components/ui/Input';
@@ -33,6 +35,9 @@ export default function MealPlanPage() {
   const setEntryServings = useMealPlanStore((state) => state.setEntryServings);
   const clear = useMealPlanStore((state) => state.clear);
   const recipes = useAllRecipes();
+  const allergies = useAccountStore((state) => state.allergies);
+  const dietaryPreferences = useAccountStore((state) => state.dietaryPreferences);
+  const hideAllergenMatches = useAccountStore((state) => state.hideAllergenMatches);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(todayKey()));
   const [pickerTarget, setPickerTarget] = useState<PickerTarget | null>(null);
   const [query, setQuery] = useState('');
@@ -46,6 +51,8 @@ export default function MealPlanPage() {
     const normalized = query.trim().toLowerCase();
     return recipes
       .filter((recipe) => {
+        if (dietaryPreferences.length > 0 && !dietaryPreferences.every((tag) => recipe.tags.includes(tag))) return false;
+        if (hideAllergenMatches && allergies.length > 0 && getRecipeAllergenMatches(recipe, allergies).length > 0) return false;
         if (!normalized) return true;
         return [
           recipe.title,
@@ -57,7 +64,7 @@ export default function MealPlanPage() {
         ].join(' ').toLowerCase().includes(normalized);
       })
       .slice(0, 30);
-  }, [query, recipes]);
+  }, [allergies, dietaryPreferences, hideAllergenMatches, query, recipes]);
 
   function openPicker(date: string, mealSlot: MealSlot) {
     setQuery('');

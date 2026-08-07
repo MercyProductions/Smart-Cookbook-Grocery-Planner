@@ -10,6 +10,19 @@ export type DietaryTag =
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
+export type Allergy =
+  | 'peanuts'
+  | 'tree-nuts'
+  | 'milk'
+  | 'eggs'
+  | 'wheat-gluten'
+  | 'soy'
+  | 'fish'
+  | 'shellfish'
+  | 'sesame';
+
+export type CookingExperience = 'beginner' | 'comfortable' | 'confident';
+
 export type GroceryCategory =
   | 'produce' | 'meat-seafood' | 'dairy-eggs' | 'bakery'
   | 'pantry' | 'pasta-rice' | 'canned-goods' | 'frozen' | 'spices'

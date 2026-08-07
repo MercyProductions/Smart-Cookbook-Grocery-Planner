@@ -4,6 +4,7 @@ import { useGroceryStore } from './useGroceryStore';
 import { useMealPlanStore } from './useMealPlanStore';
 import { useRecipeStore } from './useRecipeStore';
 import { useSettingsStore } from './useSettingsStore';
+import { useAccountStore } from './useAccountStore';
 
 interface PersistedStore {
   persist: {
@@ -13,6 +14,7 @@ interface PersistedStore {
 }
 
 const STORES: PersistedStore[] = [
+  useAccountStore,
   useSettingsStore,
   useMealPlanStore,
   useGroceryStore,

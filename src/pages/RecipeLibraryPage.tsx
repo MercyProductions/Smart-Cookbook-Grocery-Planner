@@ -4,6 +4,8 @@ import { LoaderCircle, SearchX } from 'lucide-react';
 import type { DietaryTag, Difficulty, RecipeCategory, RecipeFilterState } from '@/types';
 import { applyRecipeFilters, DEFAULT_FILTER_STATE } from '@/lib/filters';
 import { useAllRecipes } from '@/stores/useRecipeStore';
+import { useAccountStore } from '@/stores/useAccountStore';
+import { getRecipeAllergenMatches } from '@/lib/allergens';
 import { FilterBar } from '@/components/recipes/FilterBar';
 import { RecipeGrid } from '@/components/recipes/RecipeGrid';
 import { RecipeGridSkeleton } from '@/components/recipes/RecipeCardSkeleton';
@@ -68,13 +70,23 @@ export default function RecipeLibraryPage() {
   const [visibleCount, setVisibleCount] = useState(RECIPE_BATCH_SIZE);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const allRecipes = useAllRecipes();
+  const allergies = useAccountStore((state) => state.allergies);
+  const dietaryPreferences = useAccountStore((state) => state.dietaryPreferences);
+  const hideAllergenMatches = useAccountStore((state) => state.hideAllergenMatches);
 
   useEffect(() => {
     const timeout = setTimeout(() => setLoading(false), 300);
     return () => clearTimeout(timeout);
   }, []);
 
-  const filteredRecipes = useMemo(() => applyRecipeFilters(allRecipes, filters), [allRecipes, filters]);
+  const filteredRecipes = useMemo(() => {
+    const matchingRecipes = applyRecipeFilters(allRecipes, filters);
+    return matchingRecipes.filter((recipe) => {
+      if (dietaryPreferences.length > 0 && !dietaryPreferences.every((tag) => recipe.tags.includes(tag))) return false;
+      if (hideAllergenMatches && allergies.length > 0 && getRecipeAllergenMatches(recipe, allergies).length > 0) return false;
+      return true;
+    });
+  }, [allRecipes, allergies, dietaryPreferences, filters, hideAllergenMatches]);
   const visibleRecipes = useMemo(() => filteredRecipes.slice(0, visibleCount), [filteredRecipes, visibleCount]);
   const hasMore = visibleCount < filteredRecipes.length;
 
@@ -114,6 +126,7 @@ export default function RecipeLibraryPage() {
           <div>
             <h1 className="font-display text-[45px] leading-none text-text sm:text-[56px]">Recipe Library</h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-text-muted">Thousands of ideas for hungry people, curious cooks, and everyone in between.</p>
+            {(dietaryPreferences.length > 0 || (hideAllergenMatches && allergies.length > 0)) && <p className="mt-2 text-xs font-medium text-primary">Showing recipes that match your active kitchen preferences.</p>}
           </div>
           <span className="shrink-0 text-sm font-semibold text-text-muted">{allRecipes.length.toLocaleString()} recipes</span>
         </div>
